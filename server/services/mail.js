@@ -3,21 +3,19 @@ const { env } = require("../config/env");
 
 let transporter = null;
 
-if (env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS) {
-  transporter = nodemailer.createTransport({
-    host: env.MAIL_HOST,
-    port: env.MAIL_PORT,
-    secure: env.MAIL_PORT === 465,
-    auth: {
-      user: env.MAIL_USER,
-      pass: env.MAIL_PASS,
-    },
-    // Force IPv4 for Render compatibility
-    family: 4, 
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
+if (env.MAIL_SERVICE || (env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS)) {
+  const config = env.MAIL_SERVICE 
+    ? { service: env.MAIL_SERVICE, auth: { user: env.MAIL_USER, pass: env.MAIL_PASS } }
+    : {
+        host: env.MAIL_HOST,
+        port: env.MAIL_PORT,
+        secure: env.MAIL_PORT === 465,
+        auth: { user: env.MAIL_USER, pass: env.MAIL_PASS },
+        family: 4,
+        tls: { rejectUnauthorized: false }
+      };
+      
+  transporter = nodemailer.createTransport(config);
 }
 
 /**

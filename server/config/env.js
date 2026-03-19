@@ -16,6 +16,7 @@ const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "2h",
   CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || "http://localhost:5173",
   UPLOADS_DIR: process.env.UPLOADS_DIR || "uploads",
+  MAIL_SERVICE: process.env.MAIL_SERVICE,
   MAIL_HOST: process.env.MAIL_HOST,
   MAIL_PORT: Number(process.env.MAIL_PORT || 587),
   MAIL_USER: process.env.MAIL_USER,
