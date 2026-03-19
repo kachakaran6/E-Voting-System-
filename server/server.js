@@ -29,16 +29,27 @@ async function main() {
 
   const app = express();
   const server = http.createServer(app);
+  const allowedOrigins = env.CLIENT_ORIGIN.split(",").map((o) => o.trim());
+
   const io = new Server(server, {
-    cors: { origin: env.CLIENT_ORIGIN, credentials: true },
+    cors: { 
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error("Not allowed by CORS"));
+      },
+      credentials: true 
+    },
   });
 
   app.set("io", io);
 
-  app.use(helmet());
+  app.use(helmet({ crossOriginResourcePolicy: false })); // Allow cross-origin images (Base64 is fine but help static)
   app.use(
     cors({
-      origin: env.CLIENT_ORIGIN,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error("Not allowed by CORS"));
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
