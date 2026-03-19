@@ -12,6 +12,11 @@ if (env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS) {
       user: env.MAIL_USER,
       pass: env.MAIL_PASS,
     },
+    // Force IPv4 for Render compatibility
+    family: 4, 
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 }
 
