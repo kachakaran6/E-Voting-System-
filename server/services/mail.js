@@ -33,24 +33,86 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
   if (transporter) {
     try {
       await transporter.sendMail({
-        from: `"${env.MAIL_FROM.split('@')[0]}" <${env.MAIL_FROM}>`,
+        from: `"SecureVote" <${env.MAIL_FROM}>`,
         to: toEmail,
-        subject: `E-Voting: ${subject}`,
+        subject: `SecureVote: ${subject}`,
         html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #0f172a; text-align: center;">E-Voting Portal</h2>
-            <p>Hello,</p>
-            <p>You requested a code for <strong>${subject.toLowerCase()}</strong>. Please use the following 6-digit OTP:</p>
-            <div style="margin: 30px 0; text-align: center;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #0f172a; background: #f8fafc; padding: 10px 20px; border-radius: 5px; border: 1px solid #e2e8f0;">
-                ${otp}
-              </span>
-            </div>
-            <p style="font-size: 13px; color: #64748b;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="font-size: 11px; color: #94a3b8; text-align: center;">&copy; ${new Date().getFullYear()} E-Voting System. Secure & Transparent.</p>
-          </div>
-        `,
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SecureVote OTP Verification</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f4f6f8;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:40px 0;">
+          <table width="100%" max-width="500px" cellpadding="0" cellspacing="0"
+            style="background:#ffffff; border-radius:12px; box-shadow:0 10px 25px rgba(15, 23, 42, 0.08); font-family:Arial, sans-serif; overflow:hidden;">
+            
+            <!-- Header -->
+            <tr>
+              <td align="center" style="padding:32px 24px; background:#0f172a; color:#ffffff;">
+                <h1 style="margin:0; font-size:24px; letter-spacing:1px; text-transform:uppercase;">SecureVote</h1>
+                <p style="margin:8px 0 0; font-size:12px; opacity:0.7; font-weight:bold; letter-spacing:2px;">ONLINE VOTING PORTAL</p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:40px 32px; color:#334155;">
+                <h2 style="margin-top:0; color:#0f172a; font-size:20px;">Identity Verification Code</h2>
+                <p style="font-size:15px; line-height:1.6; color:#64748b;">
+                  Hello, thank you for using <strong>SecureVote</strong>.  
+                  To complete your ${type === 'FORGOT_PASSWORD' ? 'password reset' : 'registration'}, please use the One-Time Password (OTP) below.
+                </p>
+
+                <!-- OTP Box -->
+                <div style="
+                  margin:32px 0;
+                  padding:20px;
+                  background:#f8fafc;
+                  border:2px dashed #e2e8f0;
+                  border-radius:8px;
+                  text-align:center;
+                  font-size:36px;
+                  font-weight:bold;
+                  letter-spacing:10px;
+                  color:#0f172a;">
+                  ${otp}
+                </div>
+
+                <p style="font-size:14px; line-height:1.6; color:#64748b;">
+                  This OTP is valid for <strong>10 minutes</strong>.  
+                  <strong>SecureVote officers will never ask for this code.</strong> Never share it with anyone.
+                </p>
+
+                <div style="margin-top:32px; padding:16px; background:#fff7ed; border-radius:8px; border-left:4px solid #f97316;">
+                  <p style="margin:0; font-size:12px; color:#9a3412; font-weight:bold;">
+                    SECURITY ALERT: If you did not request this code, your account might be under unauthorized access attempt. Please secure your account immediately.
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="padding:24px; background:#f8fafc; border-top:1px solid #f1f5f9;">
+                <p style="margin:0; font-size:11px; color:#94a3b8; line-height:1.5;">
+                  © ${new Date().getFullYear()} SecureVote Digital Infrastructure.<br/>
+                  This is an automated security message.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`,
       });
       return true;
     } catch (error) {
