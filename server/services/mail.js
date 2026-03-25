@@ -1,23 +1,27 @@
 const nodemailer = require("nodemailer");
+const { env } = require("../config/env");
 
 /**
  * Send an OTP email to a user.
- * Using hardcoded working configuration as requested.
+ * Standardized for Production with proper Timeouts and Error Handling.
  */
 async function sendOtpEmail(toEmail, otp, type = "verification") {
   const subject = type === "FORGOT_PASSWORD" ? "Reset your password" : "Verify your email";
   
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "kachakaran06@gmail.com",
-        pass: "ketprbnpemblnefm",
-      },
-    });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: env.MAIL_USER,
+      pass: env.MAIL_PASS,
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 30000,
+  });
 
+  try {
     await transporter.sendMail({
-      from: `"SecureVote" <kachakaran06@gmail.com>`,
+      from: `"SecureVote" <${env.MAIL_USER}>`,
       to: toEmail,
       subject: `SecureVote: ${subject}`,
       html: `
@@ -98,18 +102,11 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
 </html>
 `,
     });
-    console.log("📧 OTP email sent successfully to:", toEmail);
+    console.log("✅ OTP email sent successfully to:", toEmail);
     return true;
   } catch (error) {
-    console.error("[MAIL ERROR]:", error);
-    
-    // Fallback simulation for local debugging
-    console.log("------------------------------------------");
-    console.log(`[SIMULATED MAIL] To: ${toEmail}`);
-    console.log(`[SIMULATED MAIL] Content: Your OTP code is [ ${otp} ]`);
-    console.log("------------------------------------------");
-    
-    return true; // Return true so code doesn't hang, but logs error above
+    console.error("❌ OTP Email service failed:", error.message);
+    throw new Error("Email service failed: " + error.message);
   }
 }
 
