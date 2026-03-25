@@ -1,5 +1,6 @@
 const { Election } = require("../models/Election");
 const { Candidate } = require("../models/Candidate");
+const { Vote } = require("../models/Vote");
 const { recomputeAndPersist, computeElectionStatus } = require("../services/electionStatus");
 const { notifyRole } = require("../services/notifications");
 const { emitAdmins } = require("../config/socket");
@@ -108,6 +109,21 @@ async function endElectionEarly(req, res) {
   const io = req.app.get("io");
   emitAdmins(io, "election_status", { electionId: election._id, status: election.status });
   res.json({ election });
+}
+
+async function deleteElection(req, res) {
+  const { id } = req.validated.params;
+  const election = await Election.findById(id);
+  if (!election) return res.status(404).json({ message: "Election not found" });
+
+  await Election.findByIdAndDelete(id);
+  await Candidate.deleteMany({ electionId: id });
+  await Vote.deleteMany({ electionId: id });
+
+  const io = req.app.get("io");
+  emitAdmins(io, "election_deleted", { electionId: id });
+
+  res.json({ message: "Election and all associated data deleted successfully" });
 }
 
 async function downloadResults(req, res) {
