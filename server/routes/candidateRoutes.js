@@ -4,7 +4,7 @@ const { z } = require("zod");
 const { authRequired } = require("../middleware/auth");
 const { roleRequired } = require("../middleware/roles");
 const { validate } = require("../middleware/validate");
-const { makeMemoryUploader } = require("../middleware/upload");
+const { makeMappedUploader } = require("../middleware/upload");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { listCandidates, createCandidate, updateCandidate, deleteCandidate } = require("../controllers/candidateController");
 
