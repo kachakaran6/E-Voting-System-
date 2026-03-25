@@ -3,18 +3,21 @@ const { env } = require("../config/env");
 
 let transporter = null;
 
-if (env.MAIL_SERVICE || (env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS)) {
-  const config = env.MAIL_SERVICE 
-    ? { service: env.MAIL_SERVICE, auth: { user: env.MAIL_USER, pass: env.MAIL_PASS } }
-    : {
-        host: env.MAIL_HOST,
-        port: env.MAIL_PORT,
-        secure: env.MAIL_PORT === 465,
-        auth: { user: env.MAIL_USER, pass: env.MAIL_PASS },
-        family: 4,
-        tls: { rejectUnauthorized: false }
-      };
-      
+if (env.MAIL_USER && env.MAIL_PASS) {
+  const isGmail = env.MAIL_SERVICE === "gmail" || env.MAIL_USER.endsWith("@gmail.com");
+  
+  const config = {
+    host: isGmail ? "smtp.gmail.com" : env.MAIL_HOST,
+    port: isGmail ? 465 : (env.MAIL_PORT || 587),
+    secure: isGmail ? true : (env.MAIL_PORT === 465),
+    auth: {
+      user: env.MAIL_USER,
+      pass: env.MAIL_PASS,
+    },
+    // FORCE IPv4 to avoid ENETUNREACH errors on networks without IPv6 support
+    family: 4,
+  };
+
   transporter = nodemailer.createTransport(config);
 }
 
