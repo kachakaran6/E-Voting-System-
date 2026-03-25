@@ -3,10 +3,16 @@ const { Vote } = require("../models/Vote");
 const { Candidate } = require("../models/Candidate");
 
 async function dashboard(req, res) {
-  const activeElections = await Election.countDocuments({ status: { $in: ["active", "paused"] } });
-  const totalElections = await Election.countDocuments({});
-  const totalVotes = await Vote.countDocuments({});
-  const totalCandidates = await Candidate.countDocuments({});
+  const { state } = req.query;
+  const query = state ? { state } : {};
+
+  const activeElections = await Election.countDocuments({ ...query, status: { $in: ["active", "paused"] } });
+  const totalElections = await Election.countDocuments(query);
+  
+  // For totalVotes, we need to filter by state too if provided
+  const totalVotes = await Vote.countDocuments(query);
+  const totalCandidates = await Candidate.countDocuments(query);
+
   res.json({
     metrics: {
       totalVotes,

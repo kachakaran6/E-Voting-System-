@@ -51,7 +51,8 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
       });
       return true;
     } catch (error) {
-      console.error("Error sending real email, falling back to console:", error.message);
+      console.error("[MAIL ERROR]:", error);
+      console.error("Falling back to console simulation.");
     }
   }
 

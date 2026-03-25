@@ -8,8 +8,6 @@ import {
   Vote,
   Users,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -141,75 +139,7 @@ export function BallotPage() {
 
   const handleDownloadPDF = () => {
     if (!receipt) return;
-
-    const doc = new jsPDF();
-
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(15, 23, 42);
-    doc.text("Voting Receipt", 14, 25);
-
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Official Record - SecureVote Platform`, 14, 32);
-
-    // Main Content
-    doc.setFontSize(11);
-    doc.setTextColor(50);
-    doc.text(
-      `This document confirms that ${user?.fullName} has successfully cast a ballot in the election period.`,
-      14,
-      45,
-      { maxWidth: 180 },
-    );
-
-    // Table
-    autoTable(doc, {
-      startY: 55,
-      head: [["Detail", "Value"]],
-      body: [
-        ["Receipt ID", receipt.receiptId],
-        ["Election", receipt.electionName],
-        ["Voter Name", user?.fullName || "--"],
-        ["Date & Time", formatDateTime(receipt.date)],
-        ["Status", "Cryptographically Signed"],
-      ],
-      theme: "striped",
-      headStyles: { fillColor: [15, 23, 42] },
-      styles: { cellPadding: 6, fontSize: 10 },
-    });
-
-    const finalY = (doc as any).lastAutoTable.finalY + 15;
-
-    // Security Box
-    doc.setDrawColor(220);
-    doc.setFillColor(249, 250, 251);
-    doc.rect(14, finalY, 182, 30, "FD");
-
-    doc.setFontSize(9);
-    doc.setTextColor(15, 23, 42);
-    doc.setFont("helvetica", "bold");
-    doc.text("SECURITY INFORMATION", 20, finalY + 10);
-
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100);
-    doc.text(`Secure Node: SECURE-VOTE-PROD-01`, 20, finalY + 18);
-    doc.text(
-      `System Signature: ${receipt.receiptId.slice(0, 16)}...`,
-      20,
-      finalY + 24,
-    );
-
-    // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text(
-      "This is an electronically generated receipt. No physical signature is required.",
-      14,
-      285,
-    );
-
-    doc.save(`Receipt_${receipt.receiptId.slice(-8)}.pdf`);
+    window.open(`${api.defaults.baseURL}/api/votes/receipt/${receipt.receiptId}`, "_blank");
   };
 
   if (!user) return null;

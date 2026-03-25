@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MapPin, Pause, Play, Plus, RefreshCw, ShieldCheck, SquareSlash } from "lucide-react";
+import { Download, MapPin, Pause, Play, Plus, RefreshCw, ShieldCheck, SquareSlash } from "lucide-react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -132,6 +132,16 @@ export function ElectionsPage() {
              <Button variant="secondary" onClick={load} loading={loading} className="!rounded-lg h-10 border-neutral-200">
               <RefreshCw className="h-4 w-4" />
             </Button>
+            {user?.role === "SUPER_ADMIN" && selectedFilterState && (
+              <Button 
+                variant="secondary" 
+                className="!rounded-lg h-10 border-brand-200 text-brand-900 bg-brand-50 hover:bg-brand-100"
+                onClick={() => window.open(`${api.defaults.baseURL}/api/elections/state/${selectedFilterState}/download`, "_blank")}
+              >
+                <Download className="h-4 w-4" />
+                <span>State Report</span>
+              </Button>
+            )}
             {canManage && (
               <Button onClick={() => setShowAddForm(!showAddForm)} className="!rounded-lg h-10 font-bold bg-brand-950">
                 <Plus className="h-4 w-4" />
@@ -279,6 +289,15 @@ export function ElectionsPage() {
                                 <Play className="h-4 w-4" />
                               </Button>
                             )}
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="!h-9 !w-9 !rounded-lg border-neutral-200 text-brand-700 hover:text-brand-900"
+                              onClick={() => window.open(`${api.defaults.baseURL}/api/elections/${e._id}/download`, "_blank")}
+                              title="Download Results"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
                             <Button
                               size="icon"
                               variant="danger"

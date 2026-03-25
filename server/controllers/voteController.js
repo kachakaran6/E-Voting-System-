@@ -5,6 +5,7 @@ const { voteReceiptId } = require("../utils/ids");
 const { recomputeAndPersist } = require("../services/electionStatus");
 const { notifyUser } = require("../services/notifications");
 const { emitAdmins } = require("../config/socket");
+const { generateVotingReceipt } = require("../utils/pdfGenerator");
 
 async function confirmVote(req, res) {
   const { electionId, candidateId, confirm } = req.validated.body;
@@ -61,15 +62,24 @@ async function getReceipt(req, res) {
   const vote = await Vote.findOne({ receiptId });
   if (!vote) return res.status(404).json({ message: "Receipt not found" });
   if (req.user.role === "VOTER" && String(vote.voterUserId) !== String(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+  
   const election = await Election.findById(vote.electionId);
-  res.json({
-    receipt: {
-      receiptId,
-      electionName: election?.title || "Election",
-      date: vote.createdAt,
-      status: "Verified & Recorded",
-    },
-  });
+  const candidate = await Candidate.findById(vote.candidateId);
+  
+  const receiptData = {
+    receiptId,
+    electionTitle: election?.title || "Unknown Election",
+    voterId: vote.voterId,
+    state: vote.state,
+    candidateName: candidate?.candidateName || "Confidential",
+    partyName: candidate?.partyName || "Confidential",
+    createdAt: vote.createdAt,
+  };
+
+  const doc = generateVotingReceipt(receiptData);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=receipt-${receiptId}.pdf`);
+  doc.pipe(res);
 }
 
 module.exports = { confirmVote, getReceipt };

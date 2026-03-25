@@ -23,7 +23,12 @@ router.get(
   asyncHandler(listCandidates)
 );
 
-const upload = makeMemoryUploader();
+const upload = makeMappedUploader({
+  fieldToSubdir: {
+    candidateImage: "candidates",
+    partyLogo: "party",
+  },
+});
 const multiUpload = upload.fields([
   { name: "candidateImage", maxCount: 1 },
   { name: "partyLogo", maxCount: 1 },

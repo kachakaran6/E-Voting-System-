@@ -6,6 +6,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { OtpInput } from "../components/ui/OtpInput";
 
 export function ForgotPasswordPage() {
   const { forgotPassword, resetPassword } = useAuth();
@@ -101,35 +102,36 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
       ) : (
-        <form onSubmit={handleReset} className="mt-8 space-y-4">
-          <Input
-            label="Verification Code"
-            placeholder="6-digit OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            maxLength={6}
-            className="!rounded-xl h-11"
-            required
-          />
-          <Input
-            label="New Password"
-            type="password"
-            placeholder="Min. 8 characters"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="!rounded-xl h-11"
-            required
-          />
-          <Input
-            label="Confirm New Password"
-            type="password"
-            placeholder="Repeat new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={pwdMismatch ? "Passwords do not match" : undefined}
-            className="!rounded-xl h-11"
-            required
-          />
+        <form onSubmit={handleReset} className="mt-8 space-y-5">
+          <div className="rounded-2xl border border-neutral-100 bg-neutral-50/40 p-5 space-y-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 ml-1 block">Enter 6-digit code</label>
+            <OtpInput 
+              length={6} 
+              value={otp} 
+              onChange={setOtp} 
+            />
+          </div>
+          <div className="grid gap-4">
+            <Input
+              label="New Password"
+              type="password"
+              placeholder="Create a strong password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="!rounded-xl h-11"
+              required
+            />
+            <Input
+              label="Confirm New Password"
+              type="password"
+              placeholder="Repeat your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={pwdMismatch ? "Passwords do not match" : undefined}
+              className="!rounded-xl h-11"
+              required
+            />
+          </div>
 
           {error && (
             <div className="rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-[11px] font-bold text-danger-800 uppercase tracking-wide">

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Activity, ArrowRight, BarChart3, ShieldCheck, Users, Vote } from "lucide-react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge } from "../../components/ui/Badge";
+import { Select } from "../../components/ui/Select";
+import { STATES } from "../../utils/constants";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -24,6 +26,8 @@ export function AdminDashboardPage() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedState, setSelectedState] = useState("");
+
 
   const load = useCallback(async () => {
     if (!user || user.role === "VOTER") {
@@ -34,14 +38,15 @@ export function AdminDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("/api/monitoring/dashboard");
+      const stateParam = selectedState ? `?state=${selectedState}` : "";
+      const res = await api.get(`/api/monitoring/dashboard${stateParam}`);
       setMetrics(res.data.metrics);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Unable to load dashboard metrics");
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, selectedState]);
 
   useEffect(() => {
     load();
@@ -112,6 +117,21 @@ export function AdminDashboardPage() {
         eyebrow="Dashboard"
         title="Platform Overview"
         description="Monitor current election activity and system statistics."
+        actions={
+          user.role === "SUPER_ADMIN" ? (
+            <div className="flex items-center gap-3 bg-white p-1.5 pl-4 rounded-xl border border-neutral-100 shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">STATE:</span>
+              <Select 
+                value={selectedState} 
+                onChange={e => setSelectedState(e.target.value)}
+                className="!h-8 !border-none !shadow-none !bg-transparent !w-40 font-bold text-neutral-900"
+              >
+                <option value="">National (All)</option>
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </Select>
+            </div>
+          ) : undefined
+        }
       />
 
       {error ? (

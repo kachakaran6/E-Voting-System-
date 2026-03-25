@@ -19,19 +19,18 @@ async function createCandidate(req, res) {
   const candidateImageFile = req.files?.candidateImage?.[0];
   const partyLogoFile = req.files?.partyLogo?.[0];
   
-  const toDataUrl = (file) => {
+  const toPath = (file, subdir) => {
     if (!file) return undefined;
-    const base64 = file.buffer.toString("base64");
-    return `data:${file.mimetype};base64,${base64}`;
+    return `/uploads/${subdir}/${file.filename}`;
   };
 
-  const candidateImage = toDataUrl(candidateImageFile);
-  const partyLogo = toDataUrl(partyLogoFile);
+  const candidateImage = toPath(candidateImageFile, "candidates");
+  const partyLogo = toPath(partyLogoFile, "party");
 
   console.log("------------------------------------------");
-  console.log("Storing candidate assets in MongoDB (Base64):");
-  console.log(`Image size: ${candidateImageFile?.size || 0} bytes`);
-  console.log(`Logo size: ${partyLogoFile?.size || 0} bytes`);
+  console.log("Storing candidate assets paths in MongoDB:");
+  console.log(`Image path: ${candidateImage || "N/A"}`);
+  console.log(`Logo path: ${partyLogo || "N/A"}`);
   console.log("------------------------------------------");
 
   const candidate = await Candidate.create({
@@ -61,17 +60,16 @@ async function updateCandidate(req, res) {
   if (candidateName) candidate.candidateName = candidateName;
   if (partyName) candidate.partyName = partyName;
 
-  const toDataUrl = (file) => {
+  const toPath = (file, subdir) => {
     if (!file) return undefined;
-    const base64 = file.buffer.toString("base64");
-    return `data:${file.mimetype};base64,${base64}`;
+    return `/uploads/${subdir}/${file.filename}`;
   };
 
   if (req.files?.candidateImage?.[0]) {
-    candidate.candidateImagePath = toDataUrl(req.files.candidateImage[0]);
+    candidate.candidateImagePath = toPath(req.files.candidateImage[0], "candidates");
   }
   if (req.files?.partyLogo?.[0]) {
-    candidate.partyLogoPath = toDataUrl(req.files.partyLogo[0]);
+    candidate.partyLogoPath = toPath(req.files.partyLogo[0], "party");
   }
 
   await candidate.save();

@@ -7,6 +7,7 @@ import { Select } from "../components/ui/Select";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { STATES } from "../utils/constants";
+import { OtpInput } from "../components/ui/OtpInput";
 
 export function RegisterPage() {
   const { register, sendOtp } = useAuth();
@@ -153,30 +154,31 @@ export function RegisterPage() {
           />
         </div>
 
-        <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 space-y-4">
-          <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <Input
-                label="OTP Verification"
-                placeholder="6-digit code"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                maxLength={6}
-                className="!rounded-xl h-10"
-              />
-            </div>
+        <div className="rounded-2xl border border-neutral-100 bg-neutral-50/40 p-5 space-y-4">
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 ml-1 mb-3 block">Email Verification Code</label>
+            <OtpInput 
+              length={6} 
+              value={otp} 
+              onChange={setOtp} 
+              error={Boolean(error && error.toLowerCase().includes("otp"))} 
+            />
+          </div>
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[10px] text-neutral-500 font-semibold uppercase tracking-tight">
+              {otpSent ? "Code sent to your inbox" : "Click send to receive code"}
+            </p>
             <Button 
               type="button" 
-              variant="secondary" 
+              variant="ghost" 
               size="sm" 
-              className="h-10 px-4 !rounded-xl font-bold" 
+              className="h-8 !px-3 !rounded-lg font-bold text-brand-900 border border-brand-100 bg-white shadow-sm hover:bg-brand-50" 
               onClick={handleSendOtp}
               disabled={otpLoading || timer > 0}
             >
               {timer > 0 ? `Resend in ${timer}s` : otpSent ? "Resend OTP" : "Send OTP"}
             </Button>
           </div>
-          {!otpSent && <p className="text-[10px] text-neutral-500 font-medium ml-1">An OTP will be sent to your email for verification.</p>}
         </div>
 
         {error ? (

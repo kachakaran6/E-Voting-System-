@@ -3,6 +3,7 @@ const { Candidate } = require("../models/Candidate");
 const { recomputeAndPersist, computeElectionStatus } = require("../services/electionStatus");
 const { notifyRole } = require("../services/notifications");
 const { emitAdmins } = require("../config/socket");
+const { generateElectionResults } = require("../utils/pdfGenerator");
 
 async function listElections(req, res) {
   const { role, state } = req.user;
@@ -109,15 +110,43 @@ async function endElectionEarly(req, res) {
   res.json({ election });
 }
 
-async function deleteElection(req, res) {
+async function downloadResults(req, res) {
   const { id } = req.validated.params;
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
-  if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
-  const candidateCount = await Candidate.countDocuments({ electionId: id });
-  if (candidateCount > 0) return res.status(409).json({ message: "Delete candidates first" });
-  await election.deleteOne();
-  res.json({ ok: true });
+
+  const candidates = await Candidate.find({ electionId: id }).sort({ voteCount: -1 });
+
+  const doc = generateElectionResults(election, candidates);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=results-${id}.pdf`);
+  doc.pipe(res);
+}
+
+async function downloadStateResults(req, res) {
+  const { state } = req.validated.params;
+  const elections = await Election.find({ state }).sort({ endDate: -1 });
+  
+  const doc = new (require("pdfkit"))({ margin: 50 });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=state-results-${state}.pdf`);
+  doc.pipe(res);
+
+  doc.fontSize(24).text("STATE-WISE ELECTION REPORT", { align: "center" }).moveDown();
+  doc.fontSize(16).text(`State: ${state}`, { align: "center" }).moveDown();
+  
+  for (const e of elections) {
+    doc.fontSize(14).text(`Election: ${e.title}`, { underline: true });
+    doc.fontSize(10).text(`Status: ${e.status} | End: ${new Date(e.endDate).toLocaleDateString()}`);
+    
+    const candidates = await Candidate.find({ electionId: e._id }).sort({ voteCount: -1 });
+    candidates.forEach(c => {
+      doc.text(`- ${c.candidateName} (${c.partyName}): ${c.voteCount} votes`);
+    });
+    doc.moveDown();
+  }
+  
+  doc.end();
 }
 
 module.exports = {
@@ -129,5 +158,7 @@ module.exports = {
   resumeElection,
   endElectionEarly,
   deleteElection,
+  downloadResults,
+  downloadStateResults,
 };
 

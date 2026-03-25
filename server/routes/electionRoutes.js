@@ -14,6 +14,8 @@ const {
   resumeElection,
   endElectionEarly,
   deleteElection,
+  downloadResults,
+  downloadStateResults,
 } = require("../controllers/electionController");
 
 const router = express.Router();
@@ -95,6 +97,20 @@ router.delete(
   roleRequired("ADMIN", "SUPER_ADMIN"),
   validate(z.object({ body: z.object({}).optional(), params: z.object({ id: z.string().min(1) }), query: z.object({}).optional() })),
   asyncHandler(deleteElection)
+);
+ 
+router.get(
+  "/:id/download",
+  roleRequired("ADMIN", "SUPER_ADMIN"),
+  validate(z.object({ body: z.object({}).optional(), params: z.object({ id: z.string().min(1) }), query: z.object({}).optional() })),
+  asyncHandler(downloadResults)
+);
+
+router.get(
+  "/state/:state/download",
+  roleRequired("SUPER_ADMIN"),
+  validate(z.object({ body: z.object({}).optional(), params: z.object({ state: z.string().min(2) }), query: z.object({}).optional() })),
+  asyncHandler(downloadStateResults)
 );
 
 module.exports = { electionRoutes: router };

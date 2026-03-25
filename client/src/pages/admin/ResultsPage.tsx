@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, Download, PieChart as PieChartIcon, RefreshCw, Trophy, Vote } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -106,51 +104,8 @@ export function ResultsPage() {
   const leadingCandidate = byCandidate[0] || null;
 
   const handleDownloadPDF = () => {
-    if (!activeElection || byCandidate.length === 0) return;
-
-    const doc = new jsPDF();
-    
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(15, 23, 42); // brand-950
-    doc.text("Official Election Results", 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-    
-    // Election Details
-    doc.setFontSize(14);
-    doc.setTextColor(15, 23, 42);
-    doc.text(activeElection.title, 14, 45);
-    doc.setFontSize(10);
-    doc.text(`State: ${activeElection.state} | Status: ${activeElection.status.toUpperCase()} | Total Votes: ${totalVotes}`, 14, 52);
-
-    // Table
-    const tableData = byCandidate.map((c, index) => [
-      index + 1,
-      c.candidateName,
-      c.partyName,
-      c.voteCount.toLocaleString(),
-      totalVotes > 0 ? `${((c.voteCount / totalVotes) * 100).toFixed(2)}%` : "0%"
-    ]);
-
-    autoTable(doc, {
-      startY: 60,
-      head: [["Rank", "Candidate", "Party", "Votes", "Share"]],
-      body: tableData,
-      theme: "striped",
-      headStyles: { fillColor: [15, 23, 42] },
-      styles: { fontSize: 10, cellPadding: 5 }
-    });
-
-    // Footer
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text("This is an electronically generated report from the Online Voting System.", 14, finalY);
-
-    doc.save(`${activeElection.title}_Results.pdf`);
+    if (!activeElection) return;
+    window.open(`${api.defaults.baseURL}/api/elections/${activeElection._id}/download`, "_blank");
   };
 
   return (
