@@ -1,42 +1,29 @@
 const nodemailer = require("nodemailer");
-const { env } = require("../config/env");
-
-let transporter = null;
-
-if (env.MAIL_USER && env.MAIL_PASS) {
-  const isGmail = env.MAIL_SERVICE === "gmail" || env.MAIL_USER.endsWith("@gmail.com");
-  
-  const config = {
-    host: isGmail ? "smtp.gmail.com" : env.MAIL_HOST,
-    port: isGmail ? 465 : (env.MAIL_PORT || 587),
-    secure: isGmail ? true : (env.MAIL_PORT === 465),
-    auth: {
-      user: env.MAIL_USER,
-      pass: env.MAIL_PASS,
-    },
-    // FORCE IPv4 to avoid ENETUNREACH errors on networks without IPv6 support
-    family: 4,
-  };
-
-  transporter = nodemailer.createTransport(config);
-}
 
 /**
  * Send an OTP email to a user.
- * @param {string} toEmail 
- * @param {string} otp 
- * @param {string} type 
+ * Using hardcoded working configuration as requested.
  */
 async function sendOtpEmail(toEmail, otp, type = "verification") {
   const subject = type === "FORGOT_PASSWORD" ? "Reset your password" : "Verify your email";
   
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: `"SecureVote" <${env.MAIL_FROM}>`,
-        to: toEmail,
-        subject: `SecureVote: ${subject}`,
-        html: `
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "kachakaran06@gmail.com",
+        pass: "ketprbnpemblnefm",
+      },
+      family: 4, // Prevents ENETUNREACH IPv6 errors
+    });
+
+    await transporter.sendMail({
+      from: `"SecureVote" <kachakaran06@gmail.com>`,
+      to: toEmail,
+      subject: `SecureVote: ${subject}`,
+      html: `
 <!DOCTYPE html>
 <html>
   <head>
@@ -113,22 +100,20 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
   </body>
 </html>
 `,
-      });
-      return true;
-    } catch (error) {
-      console.error("[MAIL ERROR]:", error);
-      console.error("Falling back to console simulation.");
-    }
+    });
+    console.log("📧 OTP email sent successfully to:", toEmail);
+    return true;
+  } catch (error) {
+    console.error("[MAIL ERROR]:", error);
+    
+    // Fallback simulation for local debugging
+    console.log("------------------------------------------");
+    console.log(`[SIMULATED MAIL] To: ${toEmail}`);
+    console.log(`[SIMULATED MAIL] Content: Your OTP code is [ ${otp} ]`);
+    console.log("------------------------------------------");
+    
+    return true; // Return true so code doesn't hang, but logs error above
   }
-
-  // Fallback to console logging
-  console.log("------------------------------------------");
-  console.log(`[SIMULATED MAIL] To: ${toEmail}`);
-  console.log(`[SIMULATED MAIL] Subject: ${subject}`);
-  console.log(`[SIMULATED MAIL] Content: Your OTP code is [ ${otp} ]`);
-  console.log("------------------------------------------");
-  
-  return true;
 }
 
 module.exports = { sendOtpEmail };
