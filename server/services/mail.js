@@ -9,14 +9,11 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
   
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false, // Port 587 with STARTTLS
+      service: "gmail",
       auth: {
         user: "kachakaran06@gmail.com",
         pass: "ketprbnpemblnefm",
       },
-      family: 4, // Prevents ENETUNREACH IPv6 errors
     });
 
     await transporter.sendMail({

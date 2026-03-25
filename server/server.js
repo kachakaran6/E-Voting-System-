@@ -50,10 +50,7 @@ async function main() {
   app.use(helmet({ crossOriginResourcePolicy: false })); // Allow cross-origin images (Base64 is fine but help static)
   app.use(
     cors({
-      origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-        callback(new Error("Not allowed by CORS"));
-      },
+      origin: true,
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
