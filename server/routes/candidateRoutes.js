@@ -45,6 +45,9 @@ router.post(
         partyName: z.string().min(2).max(120),
         state: z.string().min(2).max(80),
         electionId: z.string().min(1),
+        constituency: z.string().min(2).max(120).optional(),
+        age: z.preprocess((v) => Number(v), z.number().min(25).max(120)).optional(),
+        manifesto: z.string().max(2000).optional(),
       }),
       params: z.object({}).optional(),
       query: z.object({}).optional(),
@@ -55,13 +58,18 @@ router.post(
 
 router.put(
   "/:id",
-  roleRequired("ADMIN", "SUPER_ADMIN"),
+  roleRequired("SUPER_ADMIN"),
   multiUpload,
   validate(
     z.object({
       body: z.object({
         candidateName: z.string().min(2).max(120).optional(),
         partyName: z.string().min(2).max(120).optional(),
+        state: z.string().min(2).max(80).optional(),
+        constituency: z.string().min(2).max(120).optional(),
+        age: z.preprocess((v) => Number(v), z.number().min(25).max(120)).optional(),
+        manifesto: z.string().max(2000).optional(),
+        electionId: z.string().min(1).optional(),
       }),
       params: z.object({ id: z.string().min(1) }),
       query: z.object({}).optional(),

@@ -11,7 +11,7 @@ async function listCandidates(req, res) {
 }
 
 async function createCandidate(req, res) {
-  const { candidateName, partyName, state, electionId } = req.validated.body;
+  const { candidateName, partyName, state, electionId, age, constituency, manifesto } = req.validated.body;
   const election = await Election.findById(electionId);
   if (!election) return res.status(404).json({ message: "Election not found" });
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
@@ -40,6 +40,9 @@ async function createCandidate(req, res) {
     candidateName,
     partyName,
     state,
+    constituency,
+    age,
+    manifesto,
     electionId,
     candidateImagePath: candidateImage,
     partyLogoPath: partyLogo,
@@ -51,7 +54,7 @@ async function createCandidate(req, res) {
 
 async function updateCandidate(req, res) {
   const { id } = req.validated.params;
-  const { candidateName, partyName } = req.validated.body;
+  const { candidateName, partyName, state, age, constituency, manifesto } = req.validated.body;
 
   const candidate = await Candidate.findById(id);
   if (!candidate) return res.status(404).json({ message: "Candidate not found" });
@@ -62,6 +65,10 @@ async function updateCandidate(req, res) {
 
   if (candidateName) candidate.candidateName = candidateName;
   if (partyName) candidate.partyName = partyName;
+  if (state) candidate.state = state;
+  if (age) candidate.age = age;
+  if (constituency) candidate.constituency = constituency;
+  if (manifesto) candidate.manifesto = manifesto;
 
   const toPath = (file, subdir) => {
     if (!file) return undefined;

@@ -6,12 +6,14 @@ import {
   Trash2,
   UserSquare2,
   Users,
+  Edit2,
 } from "lucide-react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { Input } from "../../components/ui/Input";
+import { Modal } from "../../components/ui/Modal";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { useAuth } from "../../contexts/AuthContext";
@@ -29,6 +31,9 @@ type Candidate = {
   voteCount: number;
   candidateImagePath?: string;
   partyLogoPath?: string;
+  age?: number;
+  constituency?: string;
+  manifesto?: string;
 };
 
 export function CandidatesPage() {
@@ -55,6 +60,19 @@ export function CandidatesPage() {
   const [stateName, setStateName] = useState("");
   const [candidateImage, setCandidateImage] = useState<File | null>(null);
   const [partyLogo, setPartyLogo] = useState<File | null>(null);
+  const [age, setAge] = useState("");
+  const [constituency, setConstituency] = useState("");
+  const [manifesto, setManifesto] = useState("");
+
+  const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editCandidateImage, setEditCandidateImage] = useState<File | null>(null);
+  const [editPartyLogo, setEditPartyLogo] = useState<File | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editParty, setEditParty] = useState("");
+  const [editAge, setEditAge] = useState("");
+  const [editConst, setEditConst] = useState("");
+  const [editManifesto, setEditManifesto] = useState("");
 
   const filteredCandidates = useMemo(() => {
     let list = candidates;
@@ -102,6 +120,9 @@ export function CandidatesPage() {
       fd.set("partyName", partyName);
       fd.set("electionId", electionId);
       fd.set("state", stateName);
+      fd.set("age", age);
+      fd.set("constituency", constituency);
+      fd.set("manifesto", manifesto);
       if (candidateImage) fd.set("candidateImage", candidateImage);
       if (partyLogo) fd.set("partyLogo", partyLogo);
       await api.post("/api/candidates", fd, {
@@ -113,6 +134,9 @@ export function CandidatesPage() {
       setElectionId("");
       setCandidateImage(null);
       setPartyLogo(null);
+      setAge("");
+      setConstituency("");
+      setManifesto("");
       setShowAddForm(false);
       await load();
       showToast({
@@ -132,6 +156,57 @@ export function CandidatesPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function update() {
+    if (!editingCandidate) return;
+    setError(null);
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.set("candidateName", editName);
+      fd.set("partyName", editParty);
+      fd.set("age", editAge);
+      fd.set("constituency", editConst);
+      fd.set("manifesto", editManifesto);
+      if (editCandidateImage) fd.set("candidateImage", editCandidateImage);
+      if (editPartyLogo) fd.set("partyLogo", editPartyLogo);
+
+      await api.put(`/api/candidates/${editingCandidate._id}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setShowEditModal(false);
+      setEditingCandidate(null);
+      await load();
+      showToast({
+        tone: "success",
+        title: "Candidate updated",
+        description: "The changes have been saved.",
+      });
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to update candidate";
+      setError(message);
+      showToast({
+        tone: "error",
+        title: "Update failed",
+        description: message,
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function startEdit(candidate: Candidate) {
+    setEditingCandidate(candidate);
+    setEditName(candidate.candidateName);
+    setEditParty(candidate.partyName);
+    setEditAge(candidate.age?.toString() || "");
+    setEditConst(candidate.constituency || "");
+    setEditManifesto(candidate.manifesto || "");
+    setEditCandidateImage(null);
+    setEditPartyLogo(null);
+    setShowEditModal(true);
   }
 
   async function remove(id: string) {
@@ -238,6 +313,30 @@ export function CandidatesPage() {
                   </option>
                 ))}
               </Select>
+              <Input
+                label="Age"
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Min 25"
+                className="!rounded-lg"
+              />
+              <Input
+                label="Constituency"
+                value={constituency}
+                onChange={(e) => setConstituency(e.target.value)}
+                placeholder="District or Area"
+                className="!rounded-lg"
+              />
+            </div>
+            <div className="mt-6">
+              <Input
+                label="Manifesto Summary"
+                value={manifesto}
+                onChange={(e) => setManifesto(e.target.value)}
+                placeholder="Key goals and promises..."
+                className="!rounded-lg"
+              />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -459,11 +558,22 @@ export function CandidatesPage() {
                       </div>
 
                       {canManage ? (
-                        <div className="mt-6 pt-6 border-t border-neutral-50 flex justify-end">
+                        <div className="mt-6 pt-6 border-t border-neutral-50 flex items-center justify-end gap-2">
+                          {user?.role === "SUPER_ADMIN" && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="!rounded-lg h-9 px-4 font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                              onClick={() => startEdit(candidate)}
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                              <span>Edit</span>
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="danger"
-                            className="!rounded-lg h-9 px-4 font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="!rounded-lg h-9 px-4 font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
                             loading={deletingId === candidate._id}
                             onClick={() => remove(candidate._id)}
                           >
@@ -480,6 +590,116 @@ export function CandidatesPage() {
           )}
         </div>
       </Card>
+
+      <Modal
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingCandidate(null);
+        }}
+        title="Edit Candidate"
+      >
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Full Name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="!rounded-lg"
+            />
+            <Input
+              label="Party Name"
+              value={editParty}
+              onChange={(e) => setEditParty(e.target.value)}
+              className="!rounded-lg"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Age"
+              type="number"
+              value={editAge}
+              onChange={(e) => setEditAge(e.target.value)}
+              className="!rounded-lg"
+            />
+            <Input
+              label="Constituency"
+              value={editConst}
+              onChange={(e) => setEditConst(e.target.value)}
+              className="!rounded-lg"
+            />
+          </div>
+          <Input
+            label="Manifesto"
+            value={editManifesto}
+            onChange={(e) => setEditManifesto(e.target.value)}
+            className="!rounded-lg"
+          />
+
+          <div className="grid grid-cols-2 gap-6 mt-2">
+            <label className="group block cursor-pointer">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                Update Portrait
+              </div>
+              <div className="rounded-xl border border-dashed border-neutral-200 p-4 transition hover:bg-neutral-50">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-neutral-100">
+                    <ImagePlus className="h-5 w-5" />
+                  </div>
+                  <div className="text-xs font-bold truncate max-w-[100px]">
+                    {editCandidateImage ? editCandidateImage.name : "New Image"}
+                  </div>
+                </div>
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => setEditCandidateImage(e.target.files?.[0] || null)}
+              />
+            </label>
+
+            <label className="group block cursor-pointer">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                Update Logo
+              </div>
+              <div className="rounded-xl border border-dashed border-neutral-200 p-4 transition hover:bg-neutral-50">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-neutral-100">
+                    <ImagePlus className="h-5 w-5" />
+                  </div>
+                  <div className="text-xs font-bold truncate max-w-[100px]">
+                    {editPartyLogo ? editPartyLogo.name : "New Logo"}
+                  </div>
+                </div>
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => setEditPartyLogo(e.target.files?.[0] || null)}
+              />
+            </label>
+          </div>
+
+          <div className="mt-8 flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => setShowEditModal(false)}
+              className="!rounded-lg"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={update}
+              loading={saving}
+              className="!rounded-lg font-bold bg-brand-950"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
