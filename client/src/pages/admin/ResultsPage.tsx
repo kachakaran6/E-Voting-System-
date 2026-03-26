@@ -103,9 +103,23 @@ export function ResultsPage() {
   const pieData = useMemo(() => byCandidate.map((c) => ({ name: c.candidateName, value: c.voteCount })), [byCandidate]);
   const leadingCandidate = byCandidate[0] || null;
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!activeElection) return;
-    window.open(`${api.defaults.baseURL}/api/elections/${activeElection._id}/download`, "_blank");
+    try {
+      const res = await api.get(`/api/elections/${activeElection._id}/download`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `results-${activeElection._id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to download PDF");
+    }
   };
 
   return (

@@ -21,6 +21,9 @@ async function createCandidate(req, res) {
   
   const toPath = (file, subdir) => {
     if (!file) return undefined;
+    // Cloudinary returns the full URL in path
+    if (file.path && file.path.startsWith("http")) return file.path;
+    // Local storage requires construction of the URI
     return `/uploads/${subdir}/${file.filename}`;
   };
 
@@ -62,6 +65,9 @@ async function updateCandidate(req, res) {
 
   const toPath = (file, subdir) => {
     if (!file) return undefined;
+    // Cloudinary returns the full URL in path
+    if (file.path && file.path.startsWith("http")) return file.path;
+    // Local storage requires construction of the URI
     return `/uploads/${subdir}/${file.filename}`;
   };
 

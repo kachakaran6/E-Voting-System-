@@ -22,6 +22,10 @@ const env = {
   MAIL_USER: process.env.MAIL_USER,
   MAIL_PASS: process.env.MAIL_PASS,
   MAIL_FROM: process.env.MAIL_FROM || "no-reply@evoting.com",
+  USE_CLOUDINARY: process.env.USE_CLOUDINARY === "true",
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 };
 
 module.exports = { env };

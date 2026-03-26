@@ -2,6 +2,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 const { env } = require("../config/env");
 
 function ensureDir(dir) {
@@ -17,17 +19,33 @@ function safeExt(mime) {
 }
 
 function makeUploader({ subdir, allowPdf = false }) {
-  const uploadRoot = path.resolve(process.cwd(), env.UPLOADS_DIR, subdir);
-  ensureDir(uploadRoot);
+  let storage;
 
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadRoot),
-    filename: (req, file, cb) => {
-      const ext = safeExt(file.mimetype);
-      const id = crypto.randomBytes(16).toString("hex");
-      cb(null, `${Date.now()}-${id}${ext || ""}`);
-    },
-  });
+  if (env.USE_CLOUDINARY) {
+    storage = new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: `evoting/${subdir}`,
+        allowed_formats: ["jpg", "png", "jpeg", "webp", ...(allowPdf ? ["pdf"] : [])],
+        public_id: (req, file) => {
+          const id = crypto.randomBytes(12).toString("hex");
+          return `${Date.now()}-${id}`;
+        },
+      },
+    });
+  } else {
+    const uploadRoot = path.resolve(process.cwd(), env.UPLOADS_DIR, subdir);
+    ensureDir(uploadRoot);
+
+    storage = multer.diskStorage({
+      destination: (req, file, cb) => cb(null, uploadRoot),
+      filename: (req, file, cb) => {
+        const ext = safeExt(file.mimetype);
+        const id = crypto.randomBytes(16).toString("hex");
+        cb(null, `${Date.now()}-${id}${ext || ""}`);
+      },
+    });
+  }
 
   return multer({
     storage,
@@ -43,25 +61,44 @@ function makeUploader({ subdir, allowPdf = false }) {
 }
 
 function makeMappedUploader({ fieldToSubdir, allowPdfFields = [] }) {
-  const resolved = {};
-  for (const [field, subdir] of Object.entries(fieldToSubdir)) {
-    const root = path.resolve(process.cwd(), env.UPLOADS_DIR, subdir);
-    ensureDir(root);
-    resolved[field] = root;
-  }
+  let storage;
 
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const dest = resolved[file.fieldname];
-      if (!dest) return cb(new Error("Unexpected upload field"));
-      cb(null, dest);
-    },
-    filename: (req, file, cb) => {
-      const ext = safeExt(file.mimetype);
-      const id = crypto.randomBytes(16).toString("hex");
-      cb(null, `${Date.now()}-${id}${ext || ""}`);
-    },
-  });
+  if (env.USE_CLOUDINARY) {
+    storage = new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: (req, file) => {
+          const subdir = fieldToSubdir[file.fieldname] || "others";
+          return `evoting/${subdir}`;
+        },
+        allowed_formats: ["jpg", "png", "jpeg", "webp", "pdf"], // Handle dynamically in filter
+        public_id: (req, file) => {
+          const id = crypto.randomBytes(12).toString("hex");
+          return `${Date.now()}-${id}`;
+        },
+      },
+    });
+  } else {
+    const resolved = {};
+    for (const [field, subdir] of Object.entries(fieldToSubdir)) {
+      const root = path.resolve(process.cwd(), env.UPLOADS_DIR, subdir);
+      ensureDir(root);
+      resolved[field] = root;
+    }
+
+    storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        const dest = resolved[file.fieldname];
+        if (!dest) return cb(new Error("Unexpected upload field"));
+        cb(null, dest);
+      },
+      filename: (req, file, cb) => {
+        const ext = safeExt(file.mimetype);
+        const id = crypto.randomBytes(16).toString("hex");
+        cb(null, `${Date.now()}-${id}${ext || ""}`);
+      },
+    });
+  }
 
   return multer({
     storage,
@@ -80,7 +117,7 @@ function makeMappedUploader({ fieldToSubdir, allowPdfFields = [] }) {
 function makeMemoryUploader() {
   return multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for Base64 storage
+    limits: { fileSize: 5 * 1024 * 1024 },
   });
 }
 
