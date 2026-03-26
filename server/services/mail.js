@@ -9,10 +9,10 @@ const resend = new Resend(env.RESEND_API_KEY);
  */
 async function sendOtpEmail(toEmail, otp, type = "verification") {
   const subject = type === "FORGOT_PASSWORD" ? "Reset your password" : "Verify your email";
-  
+
   try {
     const response = await resend.emails.send({
-      from: "SecureVote <onboarding@resend.dev>", // Replace with verified domain in production
+      from: "SecureVote <team@trusttracker.live>", // Replace with verified domain in production
       to: [toEmail],
       subject: `SecureVote: ${subject}`,
       html: `
