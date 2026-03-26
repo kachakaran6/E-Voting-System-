@@ -3,8 +3,16 @@ const { Vote } = require("../models/Vote");
 const { Candidate } = require("../models/Candidate");
 
 async function dashboard(req, res) {
-  const { state } = req.query;
-  const query = state ? { state } : {};
+  const { role, state: userState } = req.user;
+  const { state: queryState } = req.query;
+
+  // SUPER_ADMIN can see any state stats; ADMIN is restricted to their own.
+  let targetState = queryState;
+  if (role === "ADMIN") {
+    targetState = userState;
+  }
+
+  const query = targetState ? { state: targetState } : {};
 
   const activeElections = await Election.countDocuments({ ...query, status: { $in: ["active", "paused"] } });
   const totalElections = await Election.countDocuments(query);
@@ -25,6 +33,13 @@ async function dashboard(req, res) {
 
 async function electionStats(req, res) {
   const { electionId } = req.validated.params;
+  const election = await Election.findById(electionId);
+  if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: Access denied to other states" });
+  }
+
   const totalVotes = await Vote.countDocuments({ electionId });
   const byCandidate = await Candidate.find({ electionId }).select("candidateName partyName voteCount").sort({ voteCount: -1 });
   res.json({ totalVotes, byCandidate });

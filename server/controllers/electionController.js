@@ -10,7 +10,8 @@ async function listElections(req, res) {
   const { role, state } = req.user;
 
   let query = {};
-  if (role === "VOTER") query = { state };
+  if (role === "VOTER" || role === "ADMIN") query = { state };
+  // SUPER_ADMIN (role "SUPER_ADMIN") keeps query = {}
 
   const elections = await Election.find(query).sort({ startDate: -1 });
   for (const e of elections) await recomputeAndPersist(e);
@@ -24,7 +25,9 @@ async function getElection(req, res) {
   if (!election) return res.status(404).json({ message: "Election not found" });
   await recomputeAndPersist(election);
 
-  if (req.user.role === "VOTER" && req.user.state !== election.state) return res.status(403).json({ message: "Forbidden" });
+  if ((req.user.role === "VOTER" || req.user.role === "ADMIN") && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
 
   const candidates = await Candidate.find({ electionId: election._id }).sort({ voteCount: -1, createdAt: 1 });
   res.json({ election, candidates });
@@ -32,9 +35,14 @@ async function getElection(req, res) {
 
 async function createElection(req, res) {
   const { title, state, startDate, endDate } = req.validated.body;
+  const { role, state: userState } = req.user;
+  
+  // If ADMIN, force state to user's registered state
+  const targetState = role === "ADMIN" ? userState : state;
+
   const election = await Election.create({
     title,
-    state,
+    state: targetState,
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     createdBy: req.user._id,
@@ -58,6 +66,11 @@ async function updateElection(req, res) {
 
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
 
   election.title = title ?? election.title;
@@ -73,6 +86,11 @@ async function pauseElection(req, res) {
   const { id } = req.validated.params;
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
   election.isPaused = true;
   await recomputeAndPersist(election);
@@ -86,6 +104,11 @@ async function resumeElection(req, res) {
   const { id } = req.validated.params;
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
   election.isPaused = false;
   await recomputeAndPersist(election);
@@ -99,6 +122,11 @@ async function endElectionEarly(req, res) {
   const { id } = req.validated.params;
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
   election.isEndedEarly = true;
   election.endDate = new Date();
@@ -116,6 +144,10 @@ async function deleteElection(req, res) {
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
 
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   await Election.findByIdAndDelete(id);
   await Candidate.deleteMany({ electionId: id });
   await Vote.deleteMany({ electionId: id });
@@ -130,6 +162,10 @@ async function downloadResults(req, res) {
   const { id } = req.validated.params;
   const election = await Election.findById(id);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN" && req.user.state !== election.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
 
   const candidates = await Candidate.find({ electionId: id }).sort({ voteCount: -1 });
 

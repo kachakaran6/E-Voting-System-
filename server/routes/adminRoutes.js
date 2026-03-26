@@ -21,6 +21,7 @@ router.post(
         fullName: z.string().min(2).max(120),
         email: z.string().email().max(200),
         password: z.string().min(8).max(200),
+        state: z.string().min(2).max(120),
       }),
       params: z.object({}).optional(),
       query: z.object({}).optional(),

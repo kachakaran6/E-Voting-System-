@@ -5,7 +5,7 @@ const { Election } = require("../models/Election");
 async function listCandidates(req, res) {
   const { electionId } = req.validated.query;
   const query = electionId ? { electionId } : {};
-  if (req.user.role === "VOTER") query.state = req.user.state;
+  if (req.user.role === "VOTER" || req.user.role === "ADMIN") query.state = req.user.state;
   const candidates = await Candidate.find(query).sort({ voteCount: -1, createdAt: 1 });
   res.json({ candidates });
 }
@@ -14,6 +14,13 @@ async function createCandidate(req, res) {
   const { candidateName, partyName, state, electionId, age, constituency, manifesto } = req.validated.body;
   const election = await Election.findById(electionId);
   if (!election) return res.status(404).json({ message: "Election not found" });
+
+  if (req.user.role === "ADMIN") {
+    if (election.state !== req.user.state || state !== req.user.state) {
+      return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+    }
+  }
+
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
 
   const candidateImageFile = req.files?.candidateImage?.[0];
@@ -59,6 +66,10 @@ async function updateCandidate(req, res) {
   const candidate = await Candidate.findById(id);
   if (!candidate) return res.status(404).json({ message: "Candidate not found" });
 
+  if (req.user.role === "ADMIN" && candidate.state !== req.user.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
+
   const election = await Election.findById(candidate.electionId);
   if (!election) return res.status(404).json({ message: "Election not found" });
   if (election.locked) return res.status(409).json({ message: "Election is closed and locked" });
@@ -93,6 +104,10 @@ async function deleteCandidate(req, res) {
   const { id } = req.validated.params;
   const candidate = await Candidate.findById(id);
   if (!candidate) return res.status(404).json({ message: "Candidate not found" });
+
+  if (req.user.role === "ADMIN" && candidate.state !== req.user.state) {
+    return res.status(403).json({ message: "Forbidden: You only have access to your assigned state" });
+  }
 
   const election = await Election.findById(candidate.electionId);
   if (!election) return res.status(404).json({ message: "Election not found" });

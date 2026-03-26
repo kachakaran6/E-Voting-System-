@@ -6,10 +6,12 @@ import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { Select } from "../../components/ui/Select";
 import { useToast } from "../../contexts/ToastContext";
 import { api } from "../../services/api";
+import { STATES } from "../../utils/constants";
 
-type Admin = { _id?: string; id?: string; fullName: string; email: string; role: string };
+type Admin = { _id?: string; id?: string; fullName: string; email: string; role: string; state?: string };
 
 export function SuperAdminsPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -21,6 +23,7 @@ export function SuperAdminsPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [state, setState] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
 
@@ -42,10 +45,11 @@ export function SuperAdminsPage() {
     setError(null);
     setSaving(true);
     try {
-      await api.post("/api/admins", { fullName, email, password });
+      await api.post("/api/admins", { fullName, email, password, state });
       setFullName("");
       setEmail("");
       setPassword("");
+      setState("");
       setShowAddForm(false);
       await load();
       showToast({ tone: "success", title: "Admin created", description: `${fullName} has been added.` });
@@ -108,6 +112,20 @@ export function SuperAdminsPage() {
             <div className="grid gap-6 md:grid-cols-3">
               <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Sarah Jenkins" className="!rounded-lg" />
               <Input label="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jenkins@example.com" className="!rounded-lg" />
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 ml-1">Jurisdiction / State</label>
+                <Select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="!rounded-lg h-10 border-neutral-200"
+                  required
+                >
+                  <option value="" disabled>Select state</option>
+                  {STATES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </Select>
+              </div>
               <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} hint="Min 8 characters" className="!rounded-lg" />
             </div>
             {error ? (
@@ -116,7 +134,7 @@ export function SuperAdminsPage() {
               </div>
             ) : null}
             <div className="mt-8 flex justify-end">
-              <Button onClick={create} loading={saving} disabled={!fullName || !email || password.length < 8} className="min-w-[150px] !rounded-lg font-bold bg-brand-950">
+              <Button onClick={create} loading={saving} disabled={!fullName || !email || password.length < 8 || !state} className="min-w-[150px] !rounded-lg font-bold bg-brand-950">
                 Create Account
               </Button>
             </div>
@@ -161,6 +179,7 @@ export function SuperAdminsPage() {
                   <thead>
                     <tr className="border-b border-neutral-50">
                       <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Internal Name / Email</th>
+                      <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">State</th>
                       <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Role</th>
                       <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-right">Actions</th>
                     </tr>
@@ -173,6 +192,9 @@ export function SuperAdminsPage() {
                           <td className="py-5 pr-4">
                             <div className="text-sm font-bold text-neutral-900 group-hover:text-brand-950 transition-colors">{a.fullName}</div>
                             <div className="mt-1 text-xs font-medium text-neutral-400 uppercase tracking-tight">{a.email}</div>
+                          </td>
+                          <td className="py-5 pr-4">
+                            <span className="text-xs font-bold text-neutral-600">{a.state || "N/A"}</span>
                           </td>
                           <td className="py-5 pr-4">
                             <Badge tone="brand" className="!rounded-md !px-3 font-bold text-[10px] uppercase tracking-wider">{a.role.replace('_', ' ')}</Badge>

@@ -2,12 +2,12 @@ const bcrypt = require("bcryptjs");
 const { User } = require("../models/User");
 
 async function listAdmins(req, res) {
-  const admins = await User.find({ role: "ADMIN" }).select("-passwordHash").sort({ createdAt: -1 });
+  const admins = await User.find({ role: "ADMIN" }).select("-passwordHash").sort({ state: 1, createdAt: -1 });
   res.json({ admins });
 }
 
 async function createAdmin(req, res) {
-  const { fullName, email, password } = req.validated.body;
+  const { fullName, email, password, state } = req.validated.body;
   const exists = await User.findOne({ email: email.toLowerCase() });
   if (exists) return res.status(409).json({ message: "Email already exists" });
   const admin = await User.create({
@@ -15,8 +15,9 @@ async function createAdmin(req, res) {
     email: email.toLowerCase(),
     passwordHash: await bcrypt.hash(password, 12),
     role: "ADMIN",
+    state,
   });
-  res.status(201).json({ admin: { id: admin._id, fullName: admin.fullName, email: admin.email, role: admin.role } });
+  res.status(201).json({ admin: { id: admin._id, fullName: admin.fullName, email: admin.email, role: admin.role, state: admin.state } });
 }
 
 async function deleteAdmin(req, res) {
