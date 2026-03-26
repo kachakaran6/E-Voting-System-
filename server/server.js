@@ -66,6 +66,16 @@ async function main() {
   app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
   app.get("/health", (req, res) => res.json({ ok: true }));
+  
+  app.get("/api/test-email", async (req, res) => {
+    try {
+      const { sendOtpEmail } = require("./services/mail");
+      await sendOtpEmail("kachak331@gmail.com", "123456", "verification");
+      res.json({ ok: true, message: "Test email sent" });
+    } catch (err) {
+      res.status(500).json({ ok: false, message: err.message });
+    }
+  });
 
   app.use("/api/auth", authRoutes);
   app.use("/api/admins", adminRoutes);

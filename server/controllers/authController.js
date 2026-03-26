@@ -5,6 +5,7 @@ const { env } = require("../config/env");
 const { User } = require("../models/User");
 const { Otp } = require("../models/Otp");
 const { sendOtpEmail } = require("../services/mail");
+const { sendWithTimeout } = require("../utils/timeout");
 
 function signToken(user) {
   return jwt.sign(
@@ -61,8 +62,9 @@ async function sendOtp(req, res) {
     { upsert: true }
   );
 
-  // Send Email
-  await sendOtpEmail(email, otpCode, type);
+  // Send Email (Non-blocking, with timeout safety)
+  sendWithTimeout(sendOtpEmail(email, otpCode, type))
+    .catch(err => console.error("Non-blocking Email Failed:", err.message));
 
   return res.json({ message: "OTP sent successfully" });
 }
@@ -106,7 +108,10 @@ async function forgotPassword(req, res) {
     { upsert: true }
   );
 
-  await sendOtpEmail(email, otpCode, "FORGOT_PASSWORD");
+  // Send Email (Non-blocking, with timeout for logs)
+  sendWithTimeout(sendOtpEmail(email, otpCode, "FORGOT_PASSWORD"))
+    .catch(err => console.error("Non-blocking Forgot Password Email Failed:", err.message));
+
   return res.json({ message: "Password reset OTP sent to email" });
 }
 

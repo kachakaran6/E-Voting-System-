@@ -1,28 +1,19 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const { env } = require("../config/env");
 
+const resend = new Resend(env.RESEND_API_KEY);
+
 /**
- * Send an OTP email to a user.
- * Standardized for Production with proper Timeouts and Error Handling.
+ * Send an OTP email to a user via Resend API.
+ * API-based delivery eliminates SMTP timeout issues seen on Render.
  */
 async function sendOtpEmail(toEmail, otp, type = "verification") {
   const subject = type === "FORGOT_PASSWORD" ? "Reset your password" : "Verify your email";
   
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: env.MAIL_USER,
-      pass: env.MAIL_PASS,
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 30000,
-  });
-
   try {
-    await transporter.sendMail({
-      from: `"SecureVote" <${env.MAIL_USER}>`,
-      to: toEmail,
+    const response = await resend.emails.send({
+      from: "SecureVote <onboarding@resend.dev>", // Replace with verified domain in production
+      to: [toEmail],
       subject: `SecureVote: ${subject}`,
       html: `
 <!DOCTYPE html>
@@ -102,7 +93,12 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
 </html>
 `,
     });
-    console.log("✅ OTP email sent successfully to:", toEmail);
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    console.log("✅ OTP email sent successfully via Resend API to:", toEmail);
     return true;
   } catch (error) {
     console.error("❌ OTP Email service failed:", error.message);
