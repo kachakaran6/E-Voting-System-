@@ -13,6 +13,7 @@ import { SuperAdminsPage } from "./pages/super/SuperAdminsPage";
 import { BallotPage } from "./pages/voter/BallotPage";
 import { NotificationsPage } from "./pages/shared/NotificationsPage";
 import { SettingsPage } from "./pages/shared/SettingsPage";
+import { HistoryPage } from "./pages/voter/HistoryPage";
 
 export function App() {
   return (
@@ -67,6 +68,14 @@ export function App() {
           element={
             <ProtectedRoute roles={["VOTER"]}>
               <BallotPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="history"
+          element={
+            <ProtectedRoute roles={["VOTER"]}>
+              <HistoryPage />
             </ProtectedRoute>
           }
         />

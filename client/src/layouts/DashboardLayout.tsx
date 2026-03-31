@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   BarChart3,
   Bell,
+  History,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -61,6 +62,13 @@ export function DashboardLayout() {
       label: "Ballot",
       description: "Access your active ballot and cast your vote.",
       icon: Vote,
+      roles: ["VOTER"] as const,
+    },
+    {
+      to: "/app/history",
+      label: "Voting History",
+      description: "Review and download your official voting receipts.",
+      icon: History,
       roles: ["VOTER"] as const,
     },
     {

@@ -5,7 +5,7 @@ const { authRequired } = require("../middleware/auth");
 const { roleRequired } = require("../middleware/roles");
 const { validate } = require("../middleware/validate");
 const { asyncHandler } = require("../utils/asyncHandler");
-const { confirmVote, getReceipt } = require("../controllers/voteController");
+const { confirmVote, getReceipt, listUserVotes } = require("../controllers/voteController");
 
 const router = express.Router();
 router.use(authRequired);
@@ -25,6 +25,12 @@ router.post(
     })
   ),
   asyncHandler(confirmVote)
+);
+
+router.get(
+  "/history",
+  roleRequired("VOTER"),
+  asyncHandler(listUserVotes)
 );
 
 router.get(

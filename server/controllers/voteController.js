@@ -83,5 +83,30 @@ async function getReceipt(req, res) {
   doc.end();
 }
 
-module.exports = { confirmVote, getReceipt };
+async function listUserVotes(req, res) {
+  if (req.user.role !== "VOTER") return res.status(403).json({ message: "Forbidden" });
+  
+  const votes = await Vote.find({ 
+    $or: [
+      { voterUserId: req.user._id },
+      { voterId: req.user.voterId }
+    ]
+  })
+    .populate("electionId", "title startDate endDate")
+    .populate("candidateId", "candidateName partyName")
+    .sort({ createdAt: -1 });
+
+  return res.json({
+    history: votes.map(v => ({
+      _id: v._id,
+      receiptId: v.receiptId,
+      electionTitle: v.electionId?.title || "Unknown Election",
+      candidateName: v.candidateId?.candidateName || "Confidential",
+      partyName: v.candidateId?.partyName || "Confidential",
+      votedAt: v.createdAt,
+    }))
+  });
+}
+
+module.exports = { confirmVote, getReceipt, listUserVotes };
 
