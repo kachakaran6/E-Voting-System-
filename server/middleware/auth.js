@@ -4,10 +4,12 @@ const { User } = require("../models/User");
 
 function getTokenFromReq(req) {
   const hdr = req.headers.authorization;
-  if (!hdr) return null;
-  const [type, token] = hdr.split(" ");
-  if (type !== "Bearer") return null;
-  return token || null;
+  if (hdr) {
+    const [type, token] = hdr.split(" ");
+    if (type === "Bearer" && token) return token;
+  }
+  // Fallback to query parameter for downloads/window.open
+  return req.query.token || null;
 }
 
 async function authRequired(req, res, next) {

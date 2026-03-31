@@ -1,0 +1,343 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-03-31T23:59:59.000",
+  "data": {
+    "transactions": [
+      {
+        "id": 1,
+        "amount": 50000,
+        "description": "Monthly Salary",
+        "date": "2026-03-01T09:00:00.000",
+        "type": 0,
+        "categoryId": 1,
+        "note": "Salary credited",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-01T09:00:00.000"
+      },
+      {
+        "id": 2,
+        "amount": 1200,
+        "description": "Groceries",
+        "date": "2026-03-01T19:30:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-01T19:30:00.000"
+      },
+      {
+        "id": 3,
+        "amount": 150,
+        "description": "Auto fare",
+        "date": "2026-03-02T10:00:00.000",
+        "type": 1,
+        "categoryId": 5,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-02T10:00:00.000"
+      },
+      {
+        "id": 4,
+        "amount": 300,
+        "description": "Lunch outside",
+        "date": "2026-03-02T14:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-02T14:00:00.000"
+      },
+
+      {
+        "id": 5,
+        "amount": 2000,
+        "description": "Freelance Payment",
+        "date": "2026-03-03T12:00:00.000",
+        "type": 0,
+        "categoryId": 2,
+        "note": "Website project",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-03T12:00:00.000"
+      },
+      {
+        "id": 6,
+        "amount": 500,
+        "description": "Shopping - Clothes",
+        "date": "2026-03-03T18:30:00.000",
+        "type": 1,
+        "categoryId": 6,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-03T18:30:00.000"
+      },
+
+      {
+        "id": 7,
+        "amount": 100,
+        "description": "Tea & Snacks",
+        "date": "2026-03-04T17:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-04T17:00:00.000"
+      },
+      {
+        "id": 8,
+        "amount": 80,
+        "description": "Bus ticket",
+        "date": "2026-03-04T09:30:00.000",
+        "type": 1,
+        "categoryId": 5,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-04T09:30:00.000"
+      },
+
+      {
+        "id": 9,
+        "amount": 3000,
+        "description": "Investment Return",
+        "date": "2026-03-05T11:00:00.000",
+        "type": 0,
+        "categoryId": 3,
+        "note": "Mutual fund",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-05T11:00:00.000"
+      },
+      {
+        "id": 10,
+        "amount": 250,
+        "description": "Dinner",
+        "date": "2026-03-05T21:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-05T21:00:00.000"
+      },
+
+      {
+        "id": 11,
+        "amount": 12000,
+        "description": "House Rent",
+        "date": "2026-03-06T08:00:00.000",
+        "type": 1,
+        "categoryId": 11,
+        "note": "Monthly rent",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-06T08:00:00.000"
+      },
+      {
+        "id": 12,
+        "amount": 500,
+        "description": "Electricity Bill",
+        "date": "2026-03-06T10:00:00.000",
+        "type": 1,
+        "categoryId": 9,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-06T10:00:00.000"
+      },
+
+      {
+        "id": 13,
+        "amount": 200,
+        "description": "Medicine",
+        "date": "2026-03-07T13:00:00.000",
+        "type": 1,
+        "categoryId": 8,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-07T13:00:00.000"
+      },
+      {
+        "id": 14,
+        "amount": 400,
+        "description": "Movie Night",
+        "date": "2026-03-07T21:00:00.000",
+        "type": 1,
+        "categoryId": 7,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-07T21:00:00.000"
+      },
+
+      {
+        "id": 15,
+        "amount": 150,
+        "description": "Petrol",
+        "date": "2026-03-08T09:00:00.000",
+        "type": 1,
+        "categoryId": 5,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-08T09:00:00.000"
+      },
+      {
+        "id": 16,
+        "amount": 350,
+        "description": "Lunch",
+        "date": "2026-03-08T14:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-08T14:00:00.000"
+      },
+
+      {
+        "id": 17,
+        "amount": 1000,
+        "description": "Freelance Logo",
+        "date": "2026-03-10T11:00:00.000",
+        "type": 0,
+        "categoryId": 2,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-10T11:00:00.000"
+      },
+      {
+        "id": 18,
+        "amount": 600,
+        "description": "Shopping",
+        "date": "2026-03-10T18:00:00.000",
+        "type": 1,
+        "categoryId": 6,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-10T18:00:00.000"
+      },
+
+      {
+        "id": 19,
+        "amount": 200,
+        "description": "Snacks",
+        "date": "2026-03-12T17:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-12T17:00:00.000"
+      },
+      {
+        "id": 20,
+        "amount": 90,
+        "description": "Bus",
+        "date": "2026-03-12T09:00:00.000",
+        "type": 1,
+        "categoryId": 5,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-12T09:00:00.000"
+      },
+
+      {
+        "id": 21,
+        "amount": 450,
+        "description": "Dinner with friends",
+        "date": "2026-03-15T21:30:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-15T21:30:00.000"
+      },
+
+      {
+        "id": 22,
+        "amount": 5000,
+        "description": "Stock Profit",
+        "date": "2026-03-18T12:00:00.000",
+        "type": 0,
+        "categoryId": 3,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-18T12:00:00.000"
+      },
+
+      {
+        "id": 23,
+        "amount": 300,
+        "description": "Mobile Recharge",
+        "date": "2026-03-20T10:00:00.000",
+        "type": 1,
+        "categoryId": 9,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-20T10:00:00.000"
+      },
+
+      {
+        "id": 24,
+        "amount": 700,
+        "description": "Shoes Purchase",
+        "date": "2026-03-22T18:00:00.000",
+        "type": 1,
+        "categoryId": 6,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-22T18:00:00.000"
+      },
+
+      {
+        "id": 25,
+        "amount": 250,
+        "description": "Health Checkup",
+        "date": "2026-03-25T11:00:00.000",
+        "type": 1,
+        "categoryId": 8,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-25T11:00:00.000"
+      },
+
+      {
+        "id": 26,
+        "amount": 400,
+        "description": "Movie",
+        "date": "2026-03-27T20:00:00.000",
+        "type": 1,
+        "categoryId": 7,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-27T20:00:00.000"
+      },
+
+      {
+        "id": 27,
+        "amount": 1000,
+        "description": "Freelance Fix",
+        "date": "2026-03-29T15:00:00.000",
+        "type": 0,
+        "categoryId": 2,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-29T15:00:00.000"
+      },
+
+      {
+        "id": 28,
+        "amount": 350,
+        "description": "Dinner",
+        "date": "2026-03-30T21:00:00.000",
+        "type": 1,
+        "categoryId": 4,
+        "note": "",
+        "monthKey": "2026-03",
+        "createdAt": "2026-03-30T21:00:00.000"
+      }
+    ],
+    "categories": [],
+    "budgets": [],
+    "settings": {
+      "currency": "INR",
+      "userName": "Karan",
+      "isDarkMode": false,
+      "isFirstRun": false,
+      "transactionActionMode": "swipe",
+      "languageCode": "en",
+      "accentColorHex": "#3B82F6"
+    }
+  }
+}

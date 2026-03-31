@@ -1,8 +1,8 @@
 function computeElectionStatus(election, now = new Date()) {
-  if (election.locked) return "closed";
+  if (election.locked || election.isEndedEarly) return "closed";
+  if (now > election.endDate) return "closed";
   if (election.isPaused) return "paused";
   if (now < election.startDate) return "upcoming";
-  if (now > election.endDate) return "closed";
   return "active";
 }
 

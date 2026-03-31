@@ -53,8 +53,16 @@ export function ElectionsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const canManage = useMemo(() => user?.role === "ADMIN" || user?.role === "SUPER_ADMIN", [user]);
+
+  // Set default state for non-super-admins
+  useEffect(() => {
+    if (user?.role === "ADMIN" && user.state && !stateName) {
+      setStateName(user.state);
+    }
+  }, [user, stateName]);
 
   const filteredItems = useMemo(() => {
     if (!selectedFilterState) return items;
@@ -84,25 +92,55 @@ export function ElectionsPage() {
     }, [load])
   );
 
-  async function create() {
+  async function save() {
     setError(null);
     setSaving(true);
     try {
-      const res = await api.post("/api/elections", { title, state: stateName, startDate, endDate });
-      setItems((s) => [res.data.election, ...s]);
+      const payload = { 
+        title, 
+        state: stateName, 
+        startDate: new Date(startDate).toISOString(), 
+        endDate: new Date(endDate).toISOString() 
+      };
+
+      if (editingId) {
+        const res = await api.put(`/api/elections/${editingId}`, payload);
+        setItems(s => s.map(i => i._id === editingId ? res.data.election : i));
+        showToast({ tone: "success", title: "Election updated", description: "Changes have been saved." });
+      } else {
+        const res = await api.post("/api/elections", payload);
+        setItems((s) => [res.data.election, ...s]);
+        showToast({ tone: "success", title: "Election created", description: "The new election is now registered." });
+      }
+
       setTitle("");
-      setStateName("");
+      setStateName(user?.role === "ADMIN" ? user.state || "" : "");
       setStartDate("");
       setEndDate("");
       setShowAddForm(false);
-      showToast({ tone: "success", title: "Election created", description: "The new election is now active." });
+      setEditingId(null);
     } catch (err: any) {
-      const message = err?.response?.data?.message || "Failed to create election";
+      const message = err?.response?.data?.message || "Operation failed";
       setError(message);
-      showToast({ tone: "error", title: "Registration failed", description: message });
+      showToast({ tone: "error", title: "Action failed", description: message });
     } finally {
       setSaving(false);
     }
+  }
+
+  function startEdit(election: Election) {
+    setTitle(election.title);
+    setStateName(election.state);
+    // Convert ISO to local datetime string format required by input (YYYY-MM-DDTHH:mm)
+    const start = new Date(election.startDate);
+    const end = new Date(election.endDate);
+    
+    setStartDate(new Date(start.getTime() - start.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+    setEndDate(new Date(end.getTime() - end.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+    
+    setEditingId(election._id);
+    setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function action(id: string, act: "pause" | "resume" | "end-early") {
@@ -136,7 +174,10 @@ export function ElectionsPage() {
               <Button 
                 variant="secondary" 
                 className="!rounded-lg h-10 border-brand-200 text-brand-900 bg-brand-50 hover:bg-brand-100"
-                onClick={() => window.open(`${api.defaults.baseURL}/api/elections/state/${selectedFilterState}/download`, "_blank")}
+                onClick={() => {
+                  const token = localStorage.getItem("securevote_token") || "";
+                  window.open(`${api.defaults.baseURL}/api/elections/state/${selectedFilterState}/download?token=${token}`, "_blank");
+                }}
               >
                 <Download className="h-4 w-4" />
                 <span>State Report</span>
@@ -155,10 +196,16 @@ export function ElectionsPage() {
       {showAddForm && canManage && (
         <Card className="border-neutral-100 shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-4">
           <div className="bg-white p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-neutral-900 mb-6">Create New Election</h2>
+            <h2 className="text-xl font-bold text-neutral-900 mb-6">{editingId ? "Edit Election Cycle" : "Create New Election"}</h2>
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
               <Input label="Election Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. 2026 Lok Sabha" className="!rounded-lg" />
-              <Select label="Target State" value={stateName} onChange={(e) => setStateName(e.target.value)}>
+              <Select 
+                label="Target Jurisdiction" 
+                value={stateName} 
+                onChange={(e) => setStateName(e.target.value)}
+                disabled={user?.role === "ADMIN"}
+                hint={user?.role === "ADMIN" ? "Restricted to your assigned state" : undefined}
+              >
                 <option value="">Select State</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </Select>
@@ -166,9 +213,22 @@ export function ElectionsPage() {
               <Input label="End Date" type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="!rounded-lg" />
             </div>
 
-            <div className="mt-8 flex justify-end">
-              <Button onClick={create} loading={saving} disabled={!title || !stateName || !startDate || !endDate} className="min-w-[150px] !rounded-lg font-bold bg-brand-950">
-                Register Cycle
+            <div className="mt-8 flex justify-end gap-3">
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  setShowAddForm(false);
+                  setEditingId(null);
+                  setTitle("");
+                  setStartDate("");
+                  setEndDate("");
+                }} 
+                className="!rounded-lg font-bold"
+              >
+                Discard
+              </Button>
+              <Button onClick={save} loading={saving} disabled={!title || !stateName || !startDate || !endDate} className="min-w-[150px] !rounded-lg font-bold bg-brand-950">
+                {editingId ? "Save Changes" : "Register Cycle"}
               </Button>
             </div>
           </div>
@@ -266,6 +326,17 @@ export function ElectionsPage() {
                         </td>
                         <td className="py-5 text-right">
                           <div className="flex justify-end gap-2">
+                            {!e.locked && e.status !== "closed" && (
+                              <Button
+                                size="icon"
+                                variant="secondary"
+                                className="!h-9 !w-9 !rounded-lg border-neutral-200"
+                                onClick={() => startEdit(e)}
+                                title="Edit Schedule"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            )}
                             {e.status === "active" ? (
                               <Button
                                 size="icon"
@@ -293,7 +364,10 @@ export function ElectionsPage() {
                               size="icon"
                               variant="secondary"
                               className="!h-9 !w-9 !rounded-lg border-neutral-200 text-brand-700 hover:text-brand-900"
-                              onClick={() => window.open(`${api.defaults.baseURL}/api/elections/${e._id}/download`, "_blank")}
+                              onClick={() => {
+                                const token = localStorage.getItem("securevote_token") || "";
+                                window.open(`${api.defaults.baseURL}/api/elections/${e._id}/download?token=${token}`, "_blank");
+                              }}
                               title="Download Results"
                             >
                               <Download className="h-4 w-4" />

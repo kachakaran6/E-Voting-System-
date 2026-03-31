@@ -70,7 +70,6 @@ function generateVotingReceipt(receiptData) {
     .text("This is an electronically generated receipt.", { align: "center" })
     .text("Verified by SecureVote Blockchain-Inspired Ledger.", { align: "center" });
 
-  doc.end();
   return doc;
 }
 
@@ -126,7 +125,6 @@ function generateElectionResults(election, candidates) {
   doc.text(`Total Candidates: ${candidates.length}`, 50, currentY + 20);
   doc.text(`Report Generated On: ${new Date().toLocaleString()}`, 50, currentY + 40);
 
-  doc.end();
   return doc;
 }
 

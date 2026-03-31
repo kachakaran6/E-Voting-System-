@@ -80,6 +80,7 @@ async function getReceipt(req, res) {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename=receipt-${receiptId}.pdf`);
   doc.pipe(res);
+  doc.end();
 }
 
 module.exports = { confirmVote, getReceipt };

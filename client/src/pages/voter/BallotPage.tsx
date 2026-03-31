@@ -139,7 +139,8 @@ export function BallotPage() {
 
   const handleDownloadPDF = () => {
     if (!receipt) return;
-    window.open(`${api.defaults.baseURL}/api/votes/receipt/${receipt.receiptId}`, "_blank");
+    const token = localStorage.getItem("securevote_token") || "";
+    window.open(`${api.defaults.baseURL}/api/votes/receipt/${receipt.receiptId}?token=${token}`, "_blank");
   };
 
   if (!user) return null;

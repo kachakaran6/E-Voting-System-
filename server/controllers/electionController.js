@@ -40,6 +40,10 @@ async function createElection(req, res) {
   // If ADMIN, force state to user's registered state
   const targetState = role === "ADMIN" ? userState : state;
 
+  if (!targetState) {
+    return res.status(400).json({ message: "Election jurisdiction (state) is required" });
+  }
+
   const election = await Election.create({
     title,
     state: targetState,
@@ -51,8 +55,8 @@ async function createElection(req, res) {
   election.status = computeElectionStatus(election);
   await election.save();
 
-  await notifyRole("ADMIN", "Election created", `${title} (${state}) has been created.`);
-  await notifyRole("SUPER_ADMIN", "Election created", `${title} (${state}) has been created.`);
+  await notifyRole("ADMIN", "Election created", `${title} (${targetState}) has been created.`);
+  await notifyRole("SUPER_ADMIN", "Election created", `${title} (${targetState}) has been created.`);
 
   const io = req.app.get("io");
   emitAdmins(io, "election_created", { electionId: election._id });
@@ -173,6 +177,7 @@ async function downloadResults(req, res) {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename=results-${id}.pdf`);
   doc.pipe(res);
+  doc.end();
 }
 
 async function downloadStateResults(req, res) {

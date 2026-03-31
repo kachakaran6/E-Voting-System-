@@ -12,7 +12,11 @@ async function dashboard(req, res) {
     targetState = userState;
   }
 
+  const { recomputeAndPersist } = require("../services/electionStatus");
   const query = targetState ? { state: targetState } : {};
+
+  const elections = await Election.find(query);
+  for (const e of elections) await recomputeAndPersist(e);
 
   const activeElections = await Election.countDocuments({ ...query, status: { $in: ["active", "paused"] } });
   const totalElections = await Election.countDocuments(query);
