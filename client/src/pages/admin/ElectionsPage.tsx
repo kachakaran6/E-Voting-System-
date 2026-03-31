@@ -57,12 +57,12 @@ export function ElectionsPage() {
 
   const canManage = useMemo(() => user?.role === "ADMIN" || user?.role === "SUPER_ADMIN", [user]);
 
-  // Set default state for non-super-admins
+  // Set default state for non-super-admins when form opens or user changes
   useEffect(() => {
-    if (user?.role === "ADMIN" && user.state && !stateName) {
+    if (showAddForm && user?.role === "ADMIN" && user.state) {
       setStateName(user.state);
     }
-  }, [user, stateName]);
+  }, [user, showAddForm]);
 
   const filteredItems = useMemo(() => {
     if (!selectedFilterState) return items;
@@ -199,16 +199,25 @@ export function ElectionsPage() {
             <h2 className="text-xl font-bold text-neutral-900 mb-6">{editingId ? "Edit Election Cycle" : "Create New Election"}</h2>
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
               <Input label="Election Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. 2026 Lok Sabha" className="!rounded-lg" />
-              <Select 
-                label="Target Jurisdiction" 
-                value={stateName} 
-                onChange={(e) => setStateName(e.target.value)}
-                disabled={user?.role === "ADMIN"}
-                hint={user?.role === "ADMIN" ? "Restricted to your assigned state" : undefined}
-              >
-                <option value="">Select State</option>
-                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </Select>
+              {user?.role === "SUPER_ADMIN" ? (
+                <Select 
+                  label="Target Jurisdiction" 
+                  value={stateName} 
+                  onChange={(e) => setStateName(e.target.value)}
+                  hint="Global visibility active"
+                >
+                  <option value="">Select State</option>
+                  {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </Select>
+              ) : (
+                <div className="space-y-2">
+                  <div className="ml-1 text-sm font-semibold text-slate-700">Target Jurisdiction</div>
+                  <div className="h-12 w-full flex items-center px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-slate-900 shadow-sm">
+                    {user?.state || "Not Assigned"}
+                  </div>
+                  <div className="ml-1 text-xs font-medium text-slate-500">Restricted to your assigned state</div>
+                </div>
+              )}
               <Input label="Start Date" type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="!rounded-lg" />
               <Input label="End Date" type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="!rounded-lg" />
             </div>
