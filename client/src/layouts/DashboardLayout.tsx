@@ -200,17 +200,6 @@ export function DashboardLayout() {
         </header>
 
         <main className="flex-1 p-6 lg:p-10">
-          <div className="mb-10">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge tone="neutral" className="!bg-neutral-100/50 !border-neutral-200/50 !text-neutral-500">{formatRole(user?.role)} AUTHORIZED</Badge>
-              <Badge tone="success" className="!rounded-full h-2 w-2 !p-0 border-0">Dot</Badge>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Real-time Stream Active</span>
-            </div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-neutral-950 sm:text-5xl">{currentLink?.label || "Portal"}</h2>
-            <p className="mt-3 max-w-3xl text-base font-medium text-neutral-500 leading-relaxed">
-              {currentLink?.description || "Access official voting operations and secure platform controls."}
-            </p>
-          </div>
 
           <div className="min-w-0">
             <Outlet />

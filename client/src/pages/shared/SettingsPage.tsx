@@ -1,8 +1,7 @@
-import { LockKeyhole, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
-import { PageHeader } from "../../components/ui/PageHeader";
 import { useAuth } from "../../contexts/AuthContext";
 import { formatRole } from "../../utils/format";
 
@@ -11,11 +10,6 @@ export function SettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
-        eyebrow="Account"
-        title="Profile Settings"
-        description="Review your account details and manage your session."
-      />
 
       <div className="grid gap-8 xl:grid-cols-[1.3fr_0.7fr]">
         <Card className="border-neutral-100 shadow-sm overflow-hidden">
@@ -70,33 +64,20 @@ export function SettingsPage() {
           </div>
         </Card>
 
-        <div className="grid gap-6">
-          <Card className="border-neutral-100 shadow-sm p-6 sm:p-8 flex flex-col items-center text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-success-50 text-success-700 mb-6">
-              <ShieldCheck className="h-7 w-7" />
-            </div>
-            <h4 className="text-lg font-bold text-neutral-900 uppercase tracking-tight">Active Session</h4>
-            <p className="mt-2 text-sm font-medium leading-relaxed text-neutral-500">
-              Your session is cryptographically secured. Access is restricted to your role.
-            </p>
-          </Card>
-
-          <Card className="border-neutral-100 shadow-sm p-6 sm:p-8 flex flex-col items-center text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-danger-50 text-danger-700 mb-6 font-bold">
-              <LockKeyhole className="h-7 w-7" />
-            </div>
-            <h4 className="text-lg font-bold text-neutral-900 uppercase tracking-tight">System Security</h4>
-            <p className="mt-2 text-sm font-medium leading-relaxed text-neutral-500">
-              Logout to ensure account security after your work is complete.
+        <div className="grid gap-6 self-start">
+          <Card className="border-danger-100 bg-danger-50 shadow-sm p-8 flex flex-col items-center text-center">
+            <h4 className="text-lg font-bold text-danger-900 uppercase tracking-tight">Security Access</h4>
+             <p className="mt-4 text-xs font-bold text-danger-700/80 uppercase tracking-widest leading-relaxed">
+              Terminate your current session to prevent unauthorized access.
             </p>
             <Button 
                 variant="danger" 
                 fullWidth 
-                className="mt-8 justify-center h-12 !rounded-xl font-bold bg-danger-600 hover:bg-danger-700 transition-all uppercase tracking-widest text-[10px]" 
+                className="mt-8 justify-center h-12 !rounded-xl font-bold bg-danger-600 hover:bg-danger-700 transition-all uppercase tracking-widest text-[11px]" 
                 onClick={logout}
             >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span>Terminate Session</span>
             </Button>
           </Card>
         </div>

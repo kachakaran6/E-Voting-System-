@@ -5,7 +5,6 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { StatCard } from "../../components/ui/StatCard";
@@ -83,7 +82,6 @@ export function ResultsPage() {
     loadStats();
   }, [loadStats]);
 
-  // When filtered elections change and current electionId is not in it, reset it
   useEffect(() => {
     if (selectedState && filteredElections.length > 0 && !filteredElections.find(e => e._id === electionId)) {
       setElectionId(filteredElections[0]._id);
@@ -124,60 +122,53 @@ export function ResultsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
-        eyebrow="Results"
-        title="Election Results"
-        description="View live standings and download official reports."
-        actions={
-          <div className="flex w-full min-w-[300px] flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
-            {user?.role === "SUPER_ADMIN" && (
-              <div className="w-full sm:w-48">
-                <Select 
-                  label="State" 
-                  value={selectedState} 
-                  onChange={(e) => setSelectedState(e.target.value)}
-                >
-                  <option value="">All States</option>
-                  {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-neutral-900 uppercase tracking-tight">Election Analytics</h2>
+          {activeElection && <Badge tone="brand" className="font-bold uppercase tracking-widest text-[9px]">{activeElection.status}</Badge>}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {user?.role === "SUPER_ADMIN" && (
+            <div className="flex items-center bg-white px-3 py-1 rounded-xl border border-neutral-100 shadow-sm">
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest pr-3 border-r border-neutral-200 mr-3">Region</span>
+                <Select value={selectedState} onChange={(e) => setSelectedState(e.target.value)} className="!w-40 !h-8 !bg-transparent !border-none !shadow-none !text-[11px] font-bold">
+                    <option value="">All Regions</option>
+                    {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </Select>
-              </div>
-            )}
-            <div className="w-full min-w-[200px] sm:w-64">
-              <Select label="Select Election" value={electionId} onChange={(e) => setElectionId(e.target.value)} disabled={loadingElections}>
-                {filteredElections.length === 0 ? (
-                  <option value="">No elections found</option>
-                ) : (
-                  filteredElections.map((e) => (
-                    <option key={e._id} value={e._id}>
-                      {e.title} {!selectedState && `(${e.state})`}
-                    </option>
-                  ))
-                )}
-              </Select>
             </div>
-            <Button variant="secondary" onClick={loadStats} loading={loadingStats} className="!h-11 !rounded-lg border-neutral-200">
-              <RefreshCw className="h-4 w-4" />
+          )}
+          <div className="flex items-center bg-white px-3 py-1 rounded-xl border border-neutral-100 shadow-sm">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest pr-3 border-r border-neutral-200 mr-3">Context</span>
+            <Select value={electionId} onChange={(e) => setElectionId(e.target.value)} disabled={loadingElections} className="!w-48 !h-8 !bg-transparent !border-none !shadow-none !text-[11px] font-bold">
+                {filteredElections.length === 0 ? <option value="">None found</option> : filteredElections.map(e => <option key={e._id} value={e._id}>{e.title}</option>)}
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2 border-l border-neutral-100 pl-3">
+            <Button size="icon" variant="secondary" onClick={loadStats} loading={loadingStats} className="!rounded-lg h-10 w-10 border-neutral-100 shadow-sm bg-white" title="Refresh Live Data">
+              <RefreshCw className="h-5 w-5 text-neutral-600" />
             </Button>
             {activeElection && byCandidate.length > 0 && (
-              <Button onClick={handleDownloadPDF} className="!h-11 !rounded-lg bg-brand-950 font-bold">
-                <Download className="h-4 w-4" />
-                <span>PDF</span>
-              </Button>
+                <Button onClick={handleDownloadPDF} className="!rounded-lg h-10 bg-brand-950 font-bold px-4 text-xs">
+                    <Download className="h-4 w-4" />
+                    <span>Report</span>
+                </Button>
             )}
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {error ? (
-        <div className="rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-xs font-bold text-danger-800">
-          ERROR: {error}
+        <div className="rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-xs font-bold text-danger-800 uppercase">
+          {error}
         </div>
       ) : null}
 
       {loadingStats ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <Card key={index} className="p-6 border-neutral-100 shadow-sm">
+            <Card key={index} className="p-6 border-neutral-100 shadow-sm animate-pulse">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="mt-5 h-10 w-24" />
               <Skeleton className="mt-4 h-12 w-12 !rounded-lg" />
@@ -185,71 +176,26 @@ export function ResultsPage() {
           ))}
         </div>
       ) : !activeElection ? (
-        <EmptyState
-          icon={BarChart3}
-          title="No results to show"
-          description="Select an election to view the current standings."
-        />
+        <EmptyState icon={BarChart3} title="No metrics active" description="Select an active election context to view live standing analytics." />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <StatCard
-              label="Votes Cast"
-              value={totalVotes}
-              detail="Total verified ballots"
-              icon={Vote}
-              accent="brand"
-            />
-            <StatCard
-              label="Candidates"
-              value={byCandidate.length}
-              detail={`Status: ${activeElection.status.toUpperCase()}`}
-              icon={PieChartIcon}
-              accent="secondary"
-            />
-            <StatCard
-              label="Leader"
-              value={leadingCandidate ? leadingCandidate.candidateName : "--"}
-              detail={leadingCandidate ? `${leadingCandidate.voteCount} Votes` : "No votes yet"}
-              icon={Trophy}
-              accent="success"
-            />
+            <StatCard label="Verified Ballots" value={totalVotes} icon={Vote} accent="brand" />
+            <StatCard label="Candidates" value={byCandidate.length} icon={PieChartIcon} accent="secondary" />
+            <StatCard label="Platform Leader" value={leadingCandidate ? leadingCandidate.candidateName : "--"} icon={Trophy} accent="success" />
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-2 mt-2">
             <Card className="border-neutral-100 shadow-sm overflow-hidden">
               <div className="p-6 sm:p-8">
-                <h3 className="text-xl font-bold text-neutral-900 mb-6">Vote Distribution</h3>
+                <h3 className="text-xl font-bold text-neutral-900 mb-6 uppercase tracking-tight">Distribution</h3>
                 <div className="h-80 w-full">
-                  {pieData.length === 0 ? (
-                    <EmptyState
-                      icon={PieChartIcon}
-                      title="No data"
-                      description="Voting data will appear here once the first ballot is cast."
-                    />
-                  ) : (
+                  {pieData.length === 0 ? <EmptyState icon={PieChartIcon} title="No analytics" description="Metrics will populate here once voting activity begins." /> : (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none',
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                            fontSize: '12px',
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Pie 
-                          data={pieData} 
-                          dataKey="value" 
-                          nameKey="name" 
-                          outerRadius={100} 
-                          innerRadius={60}
-                          paddingAngle={5}
-                        >
-                          {pieData.map((_, idx) => (
-                            <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                          ))}
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '11px', fontWeight: 'bold' }} />
+                        <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={100} innerRadius={60} paddingAngle={5}>
+                          {pieData.map((_, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
                         </Pie>
                       </PieChart>
                     </ResponsiveContainer>
@@ -260,48 +206,16 @@ export function ResultsPage() {
 
             <Card className="border-neutral-100 shadow-sm overflow-hidden">
                <div className="p-6 sm:p-8">
-                <h3 className="text-xl font-bold text-neutral-900 mb-6">Standings</h3>
+                <h3 className="text-xl font-bold text-neutral-900 mb-6 uppercase tracking-tight">Growth Trend</h3>
                 <div className="h-80 w-full">
-                  {byCandidate.length === 0 ? (
-                    <EmptyState
-                      icon={BarChart3}
-                      title="No data"
-                      description="Standing will appear here as votes are tabulated."
-                    />
-                  ) : (
+                  {byCandidate.length === 0 ? <EmptyState icon={BarChart3} title="Empty Trend" description="Live growth indicators will appear as ballots are registered." /> : (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={byCandidate} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                        <XAxis 
-                          dataKey="candidateName" 
-                          tickLine={false} 
-                          axisLine={false} 
-                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
-                          dy={10}
-                        />
-                        <YAxis 
-                          tickLine={false} 
-                          axisLine={false} 
-                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none',
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                            fontSize: '12px',
-                            fontWeight: 'bold'
-                          }}
-                          cursor={{ fill: '#f1f5f9' }}
-                        />
-                        <Bar 
-                          dataKey="voteCount" 
-                          fill="#0f172a" 
-                          radius={[4, 4, 4, 4]} 
-                          barSize={40}
-                        >
-                           {byCandidate.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
+                        <XAxis dataKey="candidateName" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} dy={10} />
+                        <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '11px', fontWeight: 'bold' }} cursor={{ fill: '#f8fafc' }} />
+                        <Bar dataKey="voteCount" radius={[6, 6, 6, 6]} barSize={40}>
+                           {byCandidate.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -311,33 +225,23 @@ export function ResultsPage() {
             </Card>
           </div>
 
-          <Card className="border-neutral-100 shadow-sm overflow-hidden">
+          <Card className="border-neutral-100 shadow-sm overflow-hidden mt-6">
             <div className="p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xl font-bold text-neutral-900">Detailed Results</h3>
-                <Badge tone="brand" className="h-7 !px-4 !rounded-lg uppercase font-bold text-[10px] tracking-wider">
-                  {activeElection.status}
-                </Badge>
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-50">
+                <h3 className="text-xl font-bold text-neutral-900 uppercase tracking-tight">Tabulation Breakdown</h3>
+                <Badge tone="success" className="h-2 w-2 !p-0 !rounded-full animate-pulse border-0 shadow-sm shadow-success-500/50">Dot</Badge>
               </div>
 
-              {byCandidate.length === 0 ? (
-                <div className="py-12">
-                  <EmptyState
-                    icon={Trophy}
-                    title="No Rankings Available"
-                    description="Formal rankings will populate once the cycle has registered ballots."
-                  />
-                </div>
-              ) : (
+              {byCandidate.length === 0 ? <div className="py-12"><EmptyState icon={Trophy} title="Standings Empty" description="Final rankings will populate once the cycle receives official votes." /></div> : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
                     <thead>
                       <tr className="border-b border-neutral-100">
-                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Rank</th>
-                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Candidate</th>
-                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Party</th>
-                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Votes</th>
-                        <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-right">Share</th>
+                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Pos.</th>
+                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Identity</th>
+                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Affiliation</th>
+                        <th className="py-4 pr-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Tally</th>
+                        <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-right">Momentum</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-50">
@@ -346,26 +250,15 @@ export function ResultsPage() {
                         return (
                           <tr key={candidate._id} className="group hover:bg-neutral-50/50 transition-colors">
                             <td className="py-5 pr-4">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-sm font-bold text-neutral-600 group-hover:bg-brand-950 group-hover:text-white transition-all">
-                                {index + 1}
-                              </div>
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-[11px] font-bold text-neutral-600 group-hover:bg-brand-950 group-hover:text-white transition-all">{index + 1}</div>
                             </td>
-                            <td className="py-5 pr-4">
-                              <div className="text-sm font-bold text-neutral-900">{candidate.candidateName}</div>
-                            </td>
-                            <td className="py-5 pr-4">
-                              <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest">{candidate.partyName}</div>
-                            </td>
-                            <td className="py-5 pr-4">
-                              <div className="text-sm font-bold text-neutral-800">{candidate.voteCount.toLocaleString()}</div>
-                            </td>
+                            <td className="py-5 pr-4"><div className="text-sm font-bold text-neutral-900">{candidate.candidateName}</div></td>
+                            <td className="py-5 pr-4"><div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{candidate.partyName}</div></td>
+                            <td className="py-5 pr-4"><div className="text-sm font-bold text-neutral-800">{candidate.voteCount.toLocaleString()}</div></td>
                             <td className="py-5 text-right">
-                              <div className="inline-flex items-center gap-2">
-                                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-100 hidden sm:block">
-                                  <div 
-                                    className="h-full bg-brand-950 transition-all duration-1000" 
-                                    style={{ width: `${share}%` }}
-                                  />
+                              <div className="inline-flex items-center gap-3">
+                                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-50 hidden sm:block">
+                                  <div className="h-full bg-brand-950 transition-all duration-1000" style={{ width: `${share}%` }} />
                                 </div>
                                 <span className="text-sm font-bold text-brand-950 w-12">{share}%</span>
                               </div>

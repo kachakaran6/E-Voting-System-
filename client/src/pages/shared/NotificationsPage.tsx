@@ -4,7 +4,6 @@ import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { PageHeader } from "../../components/ui/PageHeader";
 import { useToast } from "../../contexts/ToastContext";
 import { api } from "../../services/api";
 import { formatDateTime } from "../../utils/format";
@@ -44,23 +43,18 @@ export function NotificationsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
-        eyebrow="Updates"
-        title="Notifications"
-        description="Stay updated on election cycles and system announcements."
-        actions={
-          <Button variant="secondary" onClick={load} loading={loading} className="!rounded-lg h-10 border-neutral-200">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        }
-      />
 
       <Card className="border-neutral-100 shadow-sm overflow-hidden">
-        <div className="bg-white p-6 sm:p-8 border-b border-neutral-50 mb-8">
+        <div className="bg-white p-6 sm:p-8 border-b border-neutral-50 mb-8 flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge tone="brand" className="h-7 !px-4 !rounded-lg font-bold">{items.filter((item) => !item.isRead).length} Unread</Badge>
-            <Badge tone="secondary" className="h-7 !px-4 !rounded-lg !bg-neutral-50 !text-neutral-500 border-neutral-100 font-bold">{items.length} Total</Badge>
+            <h3 className="text-xl font-bold text-neutral-900 pr-4">Messages</h3>
+            <Badge tone="brand" className="h-6 !px-3 !rounded-lg font-bold">{items.filter((item) => !item.isRead).length} Unread</Badge>
+            <Badge tone="secondary" className="h-6 !px-3 !rounded-lg !bg-neutral-50 !text-neutral-500 border-neutral-100 font-bold">{items.length} Total</Badge>
           </div>
+          <Button variant="secondary" onClick={load} loading={loading} className="!rounded-lg h-10 border-neutral-100 hover:bg-neutral-50 px-4">
+            <RefreshCw className="h-5 w-5 mr-2" />
+            <span className="text-xs font-bold text-neutral-600">Refresh</span>
+          </Button>
         </div>
 
         <div className="px-6 sm:px-8 pb-8 space-y-4">

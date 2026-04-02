@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Download, FileText, History, RefreshCw, ShieldCheck } from "lucide-react";
+import { Download, FileText, History, RefreshCw } from "lucide-react";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { PageHeader } from "../../components/ui/PageHeader";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { useToast } from "../../contexts/ToastContext";
 import { api } from "../../services/api";
@@ -50,25 +49,18 @@ export function HistoryPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
-        eyebrow="Audit Trail"
-        title="Voting History"
-        description="A permanent record of your participation in official elections."
-        actions={
-          <Button variant="secondary" onClick={load} loading={loading} className="!rounded-lg h-10 border-neutral-200">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        }
-      />
 
       <Card className="border-neutral-100 shadow-sm overflow-hidden">
         <div className="p-6 sm:p-8">
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-xl font-bold text-neutral-900">Your Activity</h3>
-              <p className="mt-1 text-sm font-medium text-neutral-500">Official transcripts for all your cast votes.</p>
-            </div>
-            <Badge tone="brand" className="h-7 !px-4 !rounded-lg font-bold">{items.length} Recorded</Badge>
+             <div className="flex items-center gap-3">
+               <h3 className="text-xl font-bold text-neutral-900">Recorded Ballots</h3>
+               <Badge tone="brand" className="h-6 !px-3 !rounded-lg font-bold">{items.length}</Badge>
+             </div>
+             <Button variant="secondary" onClick={load} loading={loading} className="!rounded-lg h-10 border-neutral-100 hover:bg-neutral-50 px-4">
+               <RefreshCw className="h-5 w-5 mr-2" />
+               <span className="text-xs font-bold text-neutral-600">Refresh</span>
+             </Button>
           </div>
 
           {loading ? (
@@ -129,15 +121,6 @@ export function HistoryPage() {
         </div>
       </Card>
 
-      <div className="flex items-center gap-4 p-6 rounded-2xl bg-neutral-900 text-white shadow-xl shadow-neutral-950/20">
-         <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 backdrop-blur-md">
-            <ShieldCheck className="h-6 w-6 text-brand-400" />
-         </div>
-         <div className="flex-1">
-            <h4 className="text-sm font-bold">Secure Verification</h4>
-            <p className="text-xs text-neutral-400 font-medium">Receipts are cryptographically generated and can be verified by auditing the system node hash.</p>
-         </div>
-      </div>
     </div>
   );
 }

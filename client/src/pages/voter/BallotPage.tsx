@@ -232,46 +232,34 @@ export function BallotPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
-        eyebrow="Portal"
-        title={activeElection?.title || "Cast Your Vote"}
-        description="Select a candidate and cast your secure ballot."
-        actions={
-          activeElection ? (
-            <Badge
-              tone={getStatusTone(activeElection.status)}
-              className="h-7 !px-4 !rounded-lg font-bold uppercase text-[10px] tracking-widest"
-            >
-              {activeElection.status}
-            </Badge>
-          ) : null
-        }
-      />
 
       <Card className="border-neutral-100 shadow-sm">
         <div className="p-6 lg:p-8">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="brand" className="font-bold">
-                  VERIFIED VOTER
-                </Badge>
                 {user.state ? (
                   <Badge
                     tone="secondary"
                     className="!bg-neutral-50 !text-neutral-500 border-neutral-100 uppercase font-bold text-[10px]"
                   >
-                    {user.state}
+                    {user.state} REGION
                   </Badge>
                 ) : null}
               </div>
-              <h2 className="mt-5 text-2xl font-bold tracking-tight text-neutral-900">
-                {activeElection?.title || "No Election Selected"}
-              </h2>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-neutral-500 max-w-xl">
-                Please review candidates carefully before casting your ballot.
-                One submission per registered citizen is allowed.
-              </p>
+              <div className="flex items-center gap-3 mt-5">
+                <h2 className="text-2xl font-bold tracking-tight text-neutral-900">
+                  {activeElection?.title || "No Election Selected"}
+                </h2>
+                {activeElection && (
+                  <Badge
+                    tone={getStatusTone(activeElection.status)}
+                    className="h-6 !px-3 font-bold uppercase text-[10px] tracking-widest"
+                  >
+                    {activeElection.status}
+                  </Badge>
+                )}
+              </div>
 
               {activeElection ? (
                 <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -317,14 +305,6 @@ export function BallotPage() {
                   </option>
                 ))}
               </Select>
-              <div className="mt-4 p-4 rounded-xl bg-brand-50/50 border border-brand-100">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="h-5 w-5 text-brand-700 shrink-0 mt-0.5" />
-                  <p className="text-[11px] font-bold text-brand-900 leading-relaxed uppercase tracking-tight">
-                    Your identity is verified against the State Voter Registry.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -337,19 +317,6 @@ export function BallotPage() {
       ) : null}
 
       <div className="mt-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8 pb-4 border-b border-neutral-50">
-          <div>
-            <h3 className="text-xl font-bold text-neutral-900">
-              Certified Candidates
-            </h3>
-            <p className="mt-1 text-sm font-medium text-neutral-500">
-              Official candidates for your constituency.
-            </p>
-          </div>
-          <Badge tone="brand" className="h-7 !px-4 !rounded-lg font-bold">
-            {candidates.length} Available
-          </Badge>
-        </div>
 
         {loadingCandidates ? (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -411,11 +378,6 @@ export function BallotPage() {
                     <p className="mt-1 text-xs font-bold text-neutral-400 uppercase tracking-widest">
                       {candidate.partyName}
                     </p>
-                    <div className="mt-6 p-4 rounded-xl bg-neutral-50/50 border border-neutral-100 group-hover:bg-brand-50/50 group-hover:border-brand-100 transition-all">
-                      <p className="text-xs font-medium text-neutral-400 italic">
-                        "Official candidate for {activeElection?.title}."
-                      </p>
-                    </div>
                   </div>
 
                   <Button
